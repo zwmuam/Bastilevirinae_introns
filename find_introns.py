@@ -4,7 +4,6 @@
 __author__ = "Jakub Barylski"
 __maintainer__ = "Jakub Barylski"
 __license__ = "MIT"
-__version__ = "0.1"
 __email__ = "jakub.barylski@gmail.com"
 __status__ = "development"
 
