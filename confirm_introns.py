@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+__author__ = "Jakub Barylski"
+__maintainer__ = "Jakub Barylski"
+__license__ = "MIT"
+__email__ = "jakub.barylski@gmail.com"
+__status__ = "development"
+
 from pathlib import Path
 from random import randint
 
