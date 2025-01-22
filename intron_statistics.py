@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-todo: add docstring
+Module used by "find_introns.py" to calculate and visualize statstical analysis of the introns detected:
+lengths, split genes, types of embedded nucleases, genomic and taxonomic distribution etc.
 """
 
 __author__ = "Jakub Barylski"
 __maintainer__ = "Jakub Barylski"
 __license__ = "MIT"
-__version__ = "0.1"
 __email__ = "jakub.barylski@gmail.com"
 __status__ = "development"
 
