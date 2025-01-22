@@ -2,9 +2,7 @@
 Scripts used to prepare the "Self-splicing introns in genes of Bastillevirinae bacteriophages" paper.
 
 # REQUIREMENTS
-python 3.8 or above
-conda
-(other dependencies are listed in environment yaml and are installed automatically by the included script)
+conda (other dependencies are listed in environment yaml and are installed automatically by the included script)
 
 # INSTALLATION
 Clone the repository and enter its main directry:
