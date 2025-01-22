@@ -1,4 +1,10 @@
 """
+Mofified version of porechop adapters module (adds handling of custom adapters and barcodes)
+
+Modofied by Jakub Barylski (jakub.barylski@gmail.com)
+for licensing information see the original file (GNU General Public License)
+
+Original porechop.py:
 Copyright 2017 Ryan Wick (rrwick@gmail.com)
 https://github.com/rrwick/Porechop
 
