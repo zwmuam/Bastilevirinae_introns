@@ -1,12 +1,12 @@
 # Bastilevirinae introns
 Scripts used to prepare the "Self-splicing introns in genes of Bastillevirinae bacteriophages" paper.
 
-REQUIREMENTS
+# REQUIREMENTS
 python 3.8 or above
 conda
 (other dependencies are listed in environment yaml and are installed automatically by the included script)
 
-INSTALLATION
+# INSTALLATION
 Clone the repository and enter its main directry:
 ```
 git clone https://github.com/zwmuam/Bastilevirinae_introns
@@ -25,8 +25,5 @@ Before using you have to activate the environmet
 conda activate phage_introns
 ```
 
-
-
-
-USAGE
+# USAGE
 -in progress-
