@@ -1,17 +1,17 @@
 """
-Mofified version of porechop adapters module (adds handling of custom adapters and barcodes)
+Mofified version of the porechop adapters module (adds handling of custom adapters and barcodes)
 
-Modofied by Jakub Barylski (jakub.barylski@gmail.com)
+Modified by Jakub Barylski (jakub.barylski@gmail.com)
 for licensing information see the original file (GNU General Public License)
 
 Original porechop.py:
 Copyright 2017 Ryan Wick (rrwick@gmail.com)
 https://github.com/rrwick/Porechop
 
-This module contains the class and sequences for known adapters used in Oxford Nanopore library
+This module contains the class and sequences for known adapters used in the Oxford Nanopore library
 preparation kits.
 
-This file is part of Porechop. Porechop is free software: you can redistribute it and/or modify
+This file is part of Porechop. Porechop is a free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version. Porechop is distributed in
 the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -70,11 +70,11 @@ class Adapter(object):
         adapter_set_name = fasta_file.stem
         with open(fasta_file) as handle:
             # Split the file on '>' and remove the first element, which is empty
-            seqeunces = handle.read().split('>')[1:]
+            sequences = handle.read().split('>')[1:]
             # ensure that the file contains 1 or 2 sequences
-            assert len(seqeunces) in {1, 2}, f'Adapter fasta file must contain 1 or 2 (start and end) sequences ({fasta_file.stem} contains {len(seqeunces)}'
+            assert len(sequences) in {1, 2}, f'Adapter fasta file must contain 1 or 2 (start and end) sequences ({fasta_file.stem} contains {len(sequences)}'
             adapters = []
-            for s in seqeunces:
+            for s in sequences:
                 name, sequence = s.split('\n', 1)
                 name = name.strip()
                 sequence = sequence.replace('\n', '')
@@ -95,7 +95,7 @@ class Adapter(object):
 
 # INSTRUCTIONS FOR ADDING CUSTOM ADAPTERS
 # ---------------------------------------
-# If you need Porechop to remove adapters that aren't included, you can add your own my modifying
+# If you need Porechop to remove adapters that aren't included, you can add your own by modifying
 # the ADAPTERS list below.
 #
 # Here is the format for a normal adapter:
@@ -103,7 +103,7 @@ class Adapter(object):
 #             start_sequence=('Start_adapter_name', 'AAAACCCCGGGGTTTTAAAACCCCGGGGTTTT'),
 #             end_sequence=('End_adapter_name', 'AACCGGTTAACCGGTTAACCGGTTAACCGGTT'))
 #
-# You can exclude start_sequence and end_sequence as appropriate.
+# You can exclude the start_sequence and end_sequence as appropriate.
 #
 # If you have custom Barcodes, make sure that the adapter set name starts with 'Barcode '. Also,
 # remove the existing barcode sequences from this file to avoid conflicts:
@@ -150,12 +150,12 @@ ADAPTERS = [Adapter('SQK-NSK007',
             # 1D^2 kit adapters are interesting. ONT provided the following sequences on their site:
             #   start: GGCGTCTGCTTGGGTGTTTAACCTTTTTGTCAGAGAGGTTCCAAGTCAGAGAGGTTCCT
             #   end:   GGAACCTCTCTCTGACTTGGAACCTCTCTGACAAAAAGGTTAAACACCCAAGCAGACGCCAGCAAT
-            # But when looking at actual reads, I found two parts. The first corresponds to one end
-            # of the provided sequences (through slightly different):
+            # But when looking at the actual reads, I found two parts. The first corresponds to one end
+            # of the provided sequences (though slightly different):
             Adapter('1D^2 part 1',
                     start_sequence=('1D2_part_1_start', 'GAGAGGTTCCAAGTCAGAGAGGTTCCT'),
                     end_sequence=('1D2_part_1_end', 'AGGAACCTCTCTGACTTGGAACCTCTC')),
-            # and the second part corresponds to the other end, combined with a bit of standard 1D
+            # and the second part corresponds to the other end, combined with a bit of a standard 1D
             # adapter:
             Adapter('1D^2 part 2',
                     start_sequence=('1D2_part_2_start', 'CTTCGTTCAGTTACGTATTGCTGGCGTCTGCTT'),
