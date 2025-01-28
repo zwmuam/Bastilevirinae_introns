@@ -1,14 +1,14 @@
 """
-Mofified version of porechop adapters module (adds handling of custom adapters and barcodes)
+Mofified version of the porechop adapters module (adds handling of custom adapters and barcodes)
 
-Modofied by Jakub Barylski (jakub.barylski@gmail.com)
+Modified by Jakub Barylski (jakub.barylski@gmail.com)
 for licensing information see the original file (GNU General Public License)
 
 Original porechop.py:
 Copyright 2017 Ryan Wick (rrwick@gmail.com)
 https://github.com/rrwick/Porechop
 
-This module contains the class and sequences for known adapters used in Oxford Nanopore library
+This module contains the class and sequences for known adapters used in the Oxford Nanopore library
 preparation kits.
 
 This file is part of Porechop. Porechop is free software: you can redistribute it and/or modify
@@ -70,11 +70,11 @@ class Adapter(object):
         adapter_set_name = fasta_file.stem
         with open(fasta_file) as handle:
             # Split the file on '>' and remove the first element, which is empty
-            seqeunces = handle.read().split('>')[1:]
+            sequences = handle.read().split('>')[1:]
             # ensure that the file contains 1 or 2 sequences
-            assert len(seqeunces) in {1, 2}, f'Adapter fasta file must contain 1 or 2 (start and end) sequences ({fasta_file.stem} contains {len(seqeunces)}'
+            assert len(sequences) in {1, 2}, f'Adapter fasta file must contain 1 or 2 (start and end) sequences ({fasta_file.stem} contains {len(sequences)}'
             adapters = []
-            for s in seqeunces:
+            for s in sequences:
                 name, sequence = s.split('\n', 1)
                 name = name.strip()
                 sequence = sequence.replace('\n', '')
