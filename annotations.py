@@ -7,21 +7,34 @@ it is a part of the intron_analysis package
 
 __author__ = "Jakub Barylski"
 __maintainer__ = "Jakub Barylski"
-__license__ = "MIT"
+__license__ = "GNU GENERAL PUBLIC LICENSE"
 __email__ = "jakub.barylski@gmail.com"
-__status__ = "development"
 
 # imports
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Type, Union
+from typing import Dict, List, Type, Union, Any
 
 from Bio import SeqIO, SeqFeature as Feature, Seq
 
-from tweaks import logger, frantic_search
+from tweaks import logger, extensions, parse_fasta, frantic_search
 
 
 class Annotation:
+    """
+    Base class for all sequence annotations
+    :ivar seq_id: sequence identifier
+    :ivar model_id: an identifier of the model used for annotation (e.g. HMM, CM or reference sequence)
+    :ivar model_name: name of the model used for annotation
+    :ivar start: position of the first nucleotide/amino acid of the annotation
+    :ivar end: position of the last nucleotide/amino acid of the annotation
+    :ivar score: score of the annotation (e.g. score assigned by HMMer or Infernal)
+    :ivar evalue: e-value of the annotation (e.g. e-value assigned by HMMer or Infernal)
+    :ivar method: method used for annotation (e.g. cmnscan, hmmsearch etc.)
+    :ivar strand: strand of the sequence (either '+' or '-')
+    :ivar nested: list of nested annotations (e.g. exons in a gene)
+    """
+
     parser_dict = None
 
     def __init__(self,
@@ -48,7 +61,7 @@ class Annotation:
 
     def __repr__(self):
         """
-        How an instance should look like in print etc.
+        Annotation should be represented as 'ModelID [start - end] (score)'
         """
         return f'{self.seq_id}__{self.__class__.__name__}__{self.model_id}__{self.start}__{self.end}__{self.strand}'
 
@@ -67,14 +80,14 @@ class Annotation:
               split_line: List[str],
               method: str,
               keys: List[str],
-              dtype: callable = None) -> List[str]:
+              dtype: callable = None) -> List[Any]:
         """
-        Extract values from the line
-        :param split_line: list of line elements (fields)
-        :param method: program used to generate the line
-        :param keys: fields to extract
-        :return: extracted elements
-        """
+       Guide for a parser to find correct values in a line
+       :param split_line: one line from a tabular file
+       :param method: method (exact tool) used for annotation (e.g. cmnscan, hmmsearch etc.)
+       :param keys: fields to be extracted from the line
+       :return: list of values extracted from the line
+       """
         extraction = [split_line[cls.parser_dict[method][f]] for f in keys]
         if dtype is not None:
             extraction = [dtype(e) for e in extraction]
@@ -121,7 +134,8 @@ class Annotation:
         seq_id, method, _, start, end, score, strand, _, data = gff_line.split('\t')
         score = 0 if score == '.' else float(score)
         start, end = int(start), int(end)
-        data = {k: v for k, v in [e.strip().split(in_attr_separator) for e in data.split(between_attr_separator) if e.strip()]}
+        data = {k: v for k, v in
+                [e.strip().split(in_attr_separator) for e in data.split(between_attr_separator) if e.strip()]}
         try:
             model_id = frantic_search(data, 'model', 'HMM', 'model_id', 'transcript_id')
         except KeyError:
@@ -419,16 +433,16 @@ class HmmerAlignment(Annotation):
 
     @classmethod
     def from_hmmscan_line(cls,
-                          line: str):
+                          line: str) -> 'HmmerAlignment':
         return cls._from_tblout_line('hmmscan', line, unstranded=True)
 
     @classmethod
     def from_hmmsearch_line(cls,
-                            line: str):
+                            line: str) -> 'HmmerAlignment':
         return cls._from_tblout_line('hmmsearch', line, unstranded=True)
 
     def to_dna(self,
-               dna_len):
+               dna_len) -> 'DnaAlignment':
         dna_id, frame = self.seq_id.split('___')
         frame = int(frame)
         if 3 >= frame >= 1:
@@ -439,15 +453,15 @@ class HmmerAlignment(Annotation):
             raise ValueError(f'Invalid frame: {frame}')
         assert 1 <= dna_start < dna_end <= dna_len
         strand = '+' if frame > 0 else '-'
-        return DnaDomain(seq_id=dna_id,
-                         strand=strand,
-                         model_id=self.model_id,
-                         model_name=self.model_name,
-                         start=dna_start,
-                         end=dna_end,
-                         score=self.score,
-                         evalue=self.evalue,
-                         method=self.method)
+        return DnaAlignment(seq_id=dna_id,
+                            strand=strand,
+                            model_id=self.model_id,
+                            model_name=self.model_name,
+                            start=dna_start,
+                            end=dna_end,
+                            score=self.score,
+                            evalue=self.evalue,
+                            method=self.method)
 
 
 class MmseqsAlignment(Annotation):
@@ -482,18 +496,18 @@ class MmseqsAlignment(Annotation):
             raise ValueError(f'Invalid frame: {frame}')
         assert 1 <= dna_start < dna_end <= dna_len
         strand = '+' if frame > 0 else '-'
-        return DnaDomain(seq_id=dna_id,
-                         strand=strand,
-                         model_id=self.model_id,
-                         model_name=self.model_id,
-                         start=dna_start,
-                         end=dna_end,
-                         score=self.score,
-                         evalue=self.evalue,
-                         method=self.method)
+        return DnaAlignment(seq_id=dna_id,
+                            strand=strand,
+                            model_id=self.model_id,
+                            model_name=self.model_id,
+                            start=dna_start,
+                            end=dna_end,
+                            score=self.score,
+                            evalue=self.evalue,
+                            method=self.method)
 
 
-class DnaDomain(Annotation):
+class DnaAlignment(Annotation): # TODO DnaAlignment
     """
     Object representing a single
     MMseqs2 hit
@@ -504,28 +518,22 @@ class DnaDomain(Annotation):
 
 class Intron(Annotation):
     """
-    Object representing a single intron
-    an intervening sequence separating
-    coding regions in a gene
+    Intron - intervening sequence in the gene structure
     """
 
 
 class Exon(Annotation):
     """
-    Object representing a single exon
-    a coding sequence within a gene
+    Exon - coding sequence in the gene structure
     """
 
 
-PutativeExon = Union[Exon, DnaDomain]
+PutativeExon = Union[Exon, DnaAlignment]
 
 
 class Gene(Annotation):
     """
-    Object representing a gene
-    a sequence of DNA that contains
-    information for the synthesis
-    of a single protein
+    Gene - a sequence of exons and introns
     """
 
     def __init__(self,
@@ -551,6 +559,13 @@ class Gene(Annotation):
 
     def host_exon(self,
                   exon: Annotation):
+        """
+        Checks exon for compatibility,
+        add it to this gene,
+        update gene coordinates.
+        :param exon: exon to be added
+        :return: an added exon
+        """
         exon = Exon.retype(exon)
         assert self.seq_id == exon.seq_id, f'Cannot add exon from different sequence {self.seq_id} {exon.seq_id}'
         assert self.strand == exon.strand, f'Cannot add exon from different strand {self.strand} {exon.strand}'
@@ -575,15 +590,16 @@ class Gene(Annotation):
     @classmethod
     def from_exons(cls,
                    domains: List[PutativeExon],
-                   min_intron: int = 20):
+                   min_intron: int = 20): # TODO ->
         """
         TODO add docstring
         :param domains:
         :param min_intron:
         :return:
         """
-        xxx = [type(d) for d in domains]
-        assert all([isinstance(d, PutativeExon) for d in domains]), f'method can only use Exon or DnaDomains annotations to create a gene {xxx}'
+        xxx = [type(d) for d in domains] # TODO WTF?
+        assert all([isinstance(d, PutativeExon) for d in
+                    domains]), f'method can only use Exon or DnaAlignments annotations to create a gene {xxx}'
         sorted_domains = list(sorted(domains, key=lambda d: d.start))
         first_domain, last_domain = sorted_domains[0], sorted_domains[-1]
 
@@ -978,7 +994,8 @@ class AnnotationBase(dict):
         :param recursive: should the method be applied to nested annotations?
         :return:
         """
-        return AnnotationBase({seq_id: track.filter_score(threshold=threshold, recursive=recursive) for seq_id, track in self.items()})
+        return AnnotationBase(
+            {seq_id: track.filter_score(threshold=threshold, recursive=recursive) for seq_id, track in self.items()})
 
     def cull(self):
         """
@@ -1011,3 +1028,24 @@ class AnnotationBase(dict):
         :param id2name_dict: dictionary with id as key and name as value
         """
         [track.get_model_names(id2name_dict) for track in self.values()]
+
+    def with_sequences(self,
+                       fasta: Path):
+        """
+        Iterate over sequences in a fasta file
+        corresponding to the annotation tracks
+        to get (seq_id, sequence, annotation)
+        :param fasta: path to a fasta file
+        :return: generator that yields (seq_id, sequence) pairs
+        """
+        sequences = parse_fasta(fasta)
+        used_seq_ids = set()
+        for seq_id, seq in sequences:
+            used_seq_ids.add(seq_id)
+            yield seq_id, seq, self[seq_id]
+
+        # check any sequence is missing
+        not_in_self = used_seq_ids - set(self.keys())
+        not_in_fasta = set(self.keys()) - used_seq_ids
+        assert not not_in_self, f'No annotations for sequences: {not_in_self}'
+        assert not not_in_fasta, f'No sequences for annotations: {not_in_fasta}'

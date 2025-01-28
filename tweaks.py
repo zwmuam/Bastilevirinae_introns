@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Jakub Barylski"
+__maintainer__ = "Jakub Barylski"
+__license__ = "GNU GENERAL PUBLIC LICENSE"
+__email__ = "jakub.barylski@gmail.com"
+
 import inspect
 import pickle
 import sys
@@ -56,7 +64,7 @@ def frantic_search(dictionary: Dict[Hashable, Any],
 
 def find_files(directory: Path,
                file_type: str,
-               descent: bool = False):
+               descent: bool = False) -> List[Path]:
     """
     Find files of a given type in a folder.
     :param directory: directory to search in
@@ -152,70 +160,7 @@ class Parallel(joblib.Parallel):
     def print_progress(self):
         if self._progress:
             self._progress.n = self.n_completed_tasks
-            self._progress: tqdm
             self._progress.refresh()
-
-
-class BatchParallel(Parallel):
-    """ Version of the Parallel used for large numbers of
-    computationally un-intensive processes """
-
-    def __init__(self,
-                 parallelized_function: Callable,
-                 input_collection: Collection = None,
-                 random_replicates: int = None,
-                 chunk_size: float = 0.1 / default_threads,
-                 kwargs: Dict = {},
-                 n_jobs=None,
-                 backend=None,
-                 description: str = None,
-                 verbose=0,
-                 timeout=None,
-                 pre_dispatch='2 * n_jobs',
-                 batch_size='auto',
-                 temp_folder=None, max_nbytes='1M', mmap_mode='r',
-                 prefer=None,
-                 require=None,
-                 bar: bool = True):
-
-        assert bool(random_replicates) ^ bool(input_collection), 'You need to specify EITHER an input collection ' \
-                                                                 'OR number of random replicates of the function'
-
-        if description is None:
-            description = parallelized_function.__name__
-
-        if random_replicates:
-            input_collection = np.random.randint(0, 2 ** 32 - 1,
-                                                 size=random_replicates,
-                                                 dtype=np.int64)
-            description = f'{description} 🎲'
-
-        def wrapper_function(batch):
-            return tuple([parallelized_function(element, **kwargs) for element in batch])
-
-        chunk_n = int(len(input_collection) * chunk_size)
-
-        batches = [input_collection[i * chunk_n:(i + 1) * chunk_n] for i in
-                   range((len(input_collection) + chunk_n - 1) // chunk_n)]
-
-        Parallel.__init__(self,
-                          parallelized_function=wrapper_function,
-                          input_collection=batches,
-                          n_jobs=n_jobs,
-                          backend=backend,
-                          verbose=verbose,
-                          timeout=timeout,
-                          pre_dispatch=pre_dispatch,
-                          batch_size=batch_size,
-                          temp_folder=temp_folder,
-                          max_nbytes=max_nbytes,
-                          mmap_mode=mmap_mode,
-                          prefer=prefer,
-                          require=require,
-                          description=description,
-                          bar=bar)
-
-        self.result = chain.from_iterable(self.result)
 
 
 def run_external(command: List[str],
@@ -244,8 +189,10 @@ def run_external(command: List[str],
 
 def parse_fasta(fasta: Path):
     """
-    todo
-    :param fasta:
+    Simple and relatively fast fasta parser
+    used when no complex sequence handling is required
+    :param fasta: path to a fasta file
+    :return: generator yielding tuples of (identifier, sequence)
     """
     identifier, sequence = None, []
     with fasta.open() as fas:

@@ -1,93 +1,95 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+The script searches for infernal hits to intron-related covariance models in phage genomes and
+then uses HMMER to resolve gene structure in the neighborhood of the hits.
+"""
 
 __author__ = "Jakub Barylski"
 __maintainer__ = "Jakub Barylski"
-__license__ = "MIT"
+__license__ = "GNU GENERAL PUBLIC LICENSE"
 __email__ = "jakub.barylski@gmail.com"
-__status__ = "development"
 
 from pathlib import Path
 from typing import Dict, Tuple
 
+import click
 import pandas as pd
 from Bio import SeqIO, SeqRecord
-
 from annotations import Annotation, Gene, HmmerAlignment, AnnotationBase, Intron
 from intron_statistics import (plot_intron_distribution, plot_intron_lengths, introns_in_genomes,
                                taxonomic_annotations, intron_architectures, nuclease_table)
 from tweaks import run_external, logger, log_format, default_threads
 
 
-# import click
-# @click.command(no_args_is_help=True)
-# @click.option("-f", "--fasta",
-#               required=True,
-#               type=click.Path(exists=True, path_type=Path),
-#               help='fasta file input genome sequences')
-# @click.option("-c", "--cms",
-#               required=False,
-#               default=Path(__file__).parent.joinpath('databases', 'Merged.1.GISSD_IRFAM.cm'),
-#               type=click.Path(path_type=Path),
-#               help='InfeRNAl cm database with family models e.g. GSIID/RFAM')
-# @click.option("-h", "--hmm",
-#               required=False,
-#               default=Path(__file__).parent.joinpath('databases', 'Phrogs4_HMMer3.hmm'),
-#               type=click.Path(path_type=Path),
-#               help='HMMER hmm database with family models e.g. PHROGS')
-# @click.option("-p", "--mincmscore",
-#               required=False,
-#               default=20,
-#               type=int,
-#               help='minimum score for infernal hits')
-# @click.option("-q", "--minhmmscore",  # https://www.biorxiv.org/content/10.1101/2021.06.24.449764v2.full
-#               required=False,
-#               default=20,
-#               type=int,
-#               help='minimum score for HMMER hits')
-# # Searching sequence databases for functional homologs using profile HMMs: how to set bit-score thresholds?
-# # (...). Bit scores were used as thresholds rather than E-values since they remain the same irrespective of the size of the database searched.
-# @click.option("-o", "--out",
-#               required=True,
-#               type=click.Path(path_type=Path),
-#               help='output directory for the results')
-# @click.option("-n", "--context",
-#               required=False,
-#               default=2500,
-#               type=int,
-#               help='size of the neighborhood for gene structure analysis (from each side)')
-# @click.option("-t", "--threads",
-#               required=False,
-#               default=default_threads,
-#               type=int,
-#               help=f'number of CPU threads to use [default: {default_threads}]')
-# @click.option("-t", "--cmtblout",
-#               required=False,
-#               type=click.Path(exists=True, path_type=Path),
-#               help='InfeRNAl tblout file with cmscan/cmsearch results (optional, skips infernal search)')
-# @click.option("-x", "--cmtool",
-#               required=False,
-#               default='cmsearch',
-#               type=click.Choice(['cmsearch', 'cmscan']),
-#               help='InfeRNAl program used to search for intron RNA motifs [cmscan/cmsearch]')
-# @click.option("-y", "--hmmtool",
-#               required=False,
-#               default='hmmscan',
-#               type=click.Choice(['hmmsearch', 'hmmscan']),
-#               help='HMMER program used to resolve for gene structure [hmmscan/hmmsearch]')
-# @click.option("-g", "--gff",
-#               required=False,
-#               type=click.Path(exists=True, path_type=Path),
-#               help='GFF file with annotations (optional, skips infernal search)')
-# @click.option("-r", "--phrog_table",
-#               required=False,
-#               default=Path(__file__).parent.joinpath('databases', 'phrog_annot_v4.tsv'),
-#               type=click.Path(exists=True, path_type=Path),
-#               help='table with PHROG annotations')
-# @click.option("-w", "--taxon_table",
-#               required=False,
-#               type=click.Path(exists=True, path_type=Path),
-#               help='table with taxonomic annotations')
+@click.command(no_args_is_help=True)
+@click.option("-f", "--fasta",
+              required=True,
+              type=click.Path(exists=True, path_type=Path),
+              help='fasta file input genome sequences')
+@click.option("-c", "--cms",
+              required=False,
+              default=Path(__file__).parent.joinpath('databases', 'Merged.1.GISSD_IRFAM.cm'),
+              type=click.Path(path_type=Path),
+              help='InfeRNAl cm database with family models e.g. GSIID/RFAM')
+@click.option("-h", "--hmm",
+              required=False,
+              default=Path(__file__).parent.joinpath('databases', 'Phrogs4_HMMer3.hmm'),
+              type=click.Path(path_type=Path),
+              help='HMMER hmm database with family models e.g. PHROGS')
+@click.option("-p", "--mincmscore",
+              required=False,
+              default=20,
+              type=int,
+              help='minimum score for infernal hits')
+@click.option("-q", "--minhmmscore",  # https://www.biorxiv.org/content/10.1101/2021.06.24.449764v2.full
+              required=False,
+              default=20,
+              type=int,
+              help='minimum score for HMMER hits')
+# Searching sequence databases for functional homologs using profile HMMs: how to set bit-score thresholds?
+# (...). Bit scores were used as thresholds rather than E-values since they remain the same irrespective of the size of the database searched.
+@click.option("-o", "--out",
+              required=True,
+              type=click.Path(path_type=Path),
+              help='output directory for the results')
+@click.option("-n", "--context",
+              required=False,
+              default=2500,
+              type=int,
+              help='size of the neighborhood for gene structure analysis (from each side)')
+@click.option("-t", "--threads",
+              required=False,
+              default=default_threads,
+              type=int,
+              help=f'number of CPU threads to use [default: {default_threads}]')
+@click.option("-t", "--cmtblout",
+              required=False,
+              type=click.Path(exists=True, path_type=Path),
+              help='InfeRNAl tblout file with cmscan/cmsearch results (optional, skips infernal search)')
+@click.option("-x", "--cmtool",
+              required=False,
+              default='cmsearch',
+              type=click.Choice(['cmsearch', 'cmscan']),
+              help='InfeRNAl program used to search for intron RNA motifs [cmscan/cmsearch]')
+@click.option("-y", "--hmmtool",
+              required=False,
+              default='hmmscan',
+              type=click.Choice(['hmmsearch', 'hmmscan']),
+              help='HMMER program used to resolve for gene structure [hmmscan/hmmsearch]')
+@click.option("-g", "--gff",
+              required=False,
+              type=click.Path(exists=True, path_type=Path),
+              help='GFF file with annotations (optional, skips infernal search)')
+@click.option("-r", "--phrog_table",
+              required=False,
+              default=Path(__file__).parent.joinpath('databases', 'phrog_annot_v4.tsv'),
+              type=click.Path(exists=True, path_type=Path),
+              help='table with PHROG annotations')
+@click.option("-w", "--taxon_table",
+              required=False,
+              type=click.Path(exists=True, path_type=Path),
+              help='table with taxonomic annotations')
 def find_introns(fasta: Path,
                  cms: Path,
                  mincmscore: int,
@@ -262,7 +264,8 @@ def resolve_gene_structure(hmm_alignments: AnnotationBase,
             best_split_gene = Gene.top_scoring([Gene.from_exons(ds) for ds in model_domains.values() if len(ds) > 1])
             if not best_split_gene.children(Intron):
                 logger.warning(f'No introns found in {dna_id}')
-            [i.dock_overlapping(alignments_in_dna[dna_id], culled=True, overlap_threshold=0.5) for i in best_split_gene.children(Intron)]
+            [i.dock_overlapping(alignments_in_dna[dna_id], culled=True, overlap_threshold=0.5) for i in
+             best_split_gene.children(Intron)]
             anchor = Annotation.from_id_string(dna_id)
             aligned_gene = best_split_gene.absolute_coordinates(parent_annotation=anchor)
             resolved_genes.annotate(aligned_gene)
