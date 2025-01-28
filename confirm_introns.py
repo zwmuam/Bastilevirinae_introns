@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+The script uses nanopore sequencing reads to confirm the splicing of predicted introns and
+maps exact splicing sites for higly represented variants.
+"""
 
 __author__ = "Jakub Barylski"
 __maintainer__ = "Jakub Barylski"
-__license__ = "MIT"
+__license__ = "GNU GENERAL PUBLIC LICENSE"
 __email__ = "jakub.barylski@gmail.com"
-__status__ = "development"
 
 from pathlib import Path
 from random import randint
