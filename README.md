@@ -48,7 +48,7 @@ By default the script downloads the original databases used in the paper to defa
 
 
 # USAGE
-Run the "find_introns" script to locate potential group I and group II matches:
+Locate potential group I and group II matches:
 ```
 ./find_introns.py -f genomes.fasta -o genomes_intron_pred
 ```
@@ -63,14 +63,14 @@ If you have spliced cDNA reads similar to these described in the paper pass them
 The script uses minimap2 to map reads to the genome and samtools to extract splicing sites. The "-s" argument is used to specify the separator between the barcode and the read name in the fastq file. The "-mr" argument is used to specify the maximum number of reads to process.
 
 
-Introns for the alignment can be extracted using "get_intron_sequences":
+Introns for the alignment can be extracted using:
 ```
 ./get_intron_sequences.py -f genomes.fasta -o introns.fna
 ```
 By default the introns are extracted with 15-nt exon flanks compared to the original annotation to include any splicing-related elements like IGS etc but this can be changed using "-x" argument.
 
 
-To re-annotate introns (useful if you added introns from external databases like GISSD) and generate R2DT-compatible annotations use "reannotate_introns":
+To re-annotate introns (useful if you added introns from external databases like GISSD) and generate R2DT-compatible annotations use:
 ```
 ./reannotate_introns.py -f GIISSD_and_Bastille_introns.fasta -o Annotated_GIISSD_and_Bastille_introns
 ```
@@ -78,13 +78,13 @@ To re-annotate introns (useful if you added introns from external databases like
 
 
 
-To align all analysed introns we used InfeRNAl cmalign with "--matchonly" option (to exclude variable insertion sequences and focus on conserved RNA structures:
+To align all analysed introns we used InfeRNAl cmalign with "--matchonly" option (to exclude variable insertion sequences and focus on conserved RNA structures):
 ```
 ./cmalign -o Unique_vs_RF00028.sto --dnaout --mxsize 5140 --cpu 20 --matchonly --outformat Stockholm RF00028.cm GIISSD_and_Bastille.unique_099.fasta
 ```
 
 
-The resulting stockholm alignment was converted to aligned fasta, columns with more than 50% gaps were masked in Geneious and run "prune_alignment" script to remove poorly aligned sequences:
+The resulting stockholm alignment was converted to aligned fasta, columns with more than 50% gaps were masked in Geneious and pruned to remove poorly aligned sequences:
 ```
 ./sto2fasta.py -s Unique_vs_RF00028.sto
 # Mask columns in Genious
@@ -92,7 +92,7 @@ The resulting stockholm alignment was converted to aligned fasta, columns with m
 ```
 
 
-Statistics for all unaligned sequences and dereplicate sequences as well as pruned and unpruned alignments were calculated using "alignment_statistics":
+Statistics for all unaligned sequences and dereplicate sequences as well as pruned and unpruned alignments were calculated as follows:
 ```
 ./alignment_statistics.py -u -f GIISSD_and_Bastille.fasta -o redundant_dataset_stats.xlsx
 ./alignment_statistics.py -u -f GIISSD_and_Bastille.unique_099.fasta -o nr_dataset_stats.xlsx
