@@ -1,5 +1,5 @@
 # Bastilevirinae introns
-Scripts used to analyse the data in the "Self-splicing introns in genes of <i>Bastillevirinae<i/> bacteriophages" paper.
+Scripts used to analyse the data in the "Self-splicing introns in genes of <i>Bastillevirinae</i> bacteriophages" paper.
 The analysis consists of four main steps:
 1. Finding potential group I and group II introns in the genomes using Infernal matches to custom intron CM databases and resolving potential intron-exon boundaries based on alignment to known protein families.
 2. Confirmation of introns splicing using cDNA reads and finding potential splicing sites.
