@@ -19,7 +19,7 @@ from typing import Dict, Tuple
 import pandas as pd
 import plotly.express as px
 
-from annotations import AnnotationBase, Gene, Intron, DnaDomain, InfernalAlignment
+from annotations import AnnotationBase, Gene, Intron, DnaAlignment, InfernalAlignment
 from tweaks import logger
 
 
@@ -57,7 +57,7 @@ def plot_intron_lengths(sequence_annotations: AnnotationBase,
     for seq_id, annotations in sequence_annotations.items():
         for gene in annotations:
             for intron in gene.children(Intron):
-                inner_cdss = [cds for cds in intron.children(DnaDomain)]
+                inner_cdss = [cds for cds in intron.children(DnaAlignment)]
                 total_cds_length = sum([len(cds) for cds in inner_cdss])
                 inner_hmms = [cds.model_definition() for cds in inner_cdss] if inner_cdss else ['No_CDS']
                 if len(inner_hmms) > 1:
@@ -114,7 +114,7 @@ def introns_in_genomes(sequence_annotations: AnnotationBase,
             else:
                 gene_name = gene_name
             for intron in gene.children(Intron):
-                homing_nucleases.extend([cds.model_name for cds in intron.children(DnaDomain)])
+                homing_nucleases.extend([cds.model_name for cds in intron.children(DnaAlignment)])
             gene_names.append(gene_name)
         n_introns = sum([len(g.children(Intron)) for g in genes])
         hnh_count = Counter(homing_nucleases).most_common()
@@ -202,7 +202,7 @@ def nuclease_table(gene_annotations: AnnotationBase,
     for seq_id, annotations in gene_annotations.items():
         for gene in annotations:
             for intron in gene.children(Intron):
-                intron_nucleases = [cds for cds in intron.children(DnaDomain)]
+                intron_nucleases = [cds for cds in intron.children(DnaAlignment)]
                 for cds in intron_nucleases:
                     if cds.model_id not in nucleases:
                         nucleases[cds.model_id] = {'PHROG_id': cds.model_id,

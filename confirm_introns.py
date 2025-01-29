@@ -305,9 +305,4 @@ if __name__ == '__main__':
     rnaseq_analysis()
 
 # USAGE EXAMPLE:
-# ./confirm_introns.py
-# -ca /home/michalstanoch/data/Introny_bastille_paper/adapter_promoter
-# -cb /home/michalstanoch/data/Introny_bastille_paper/barcodes_r
-# -fq /home/michalstanoch/data/Introny_bastille_paper/100k_sample.fastq
-# -rd /home/michalstanoch/data/Introny_bastille_paper/rnaseq_references
-# -o /home/michalstanoch/data/Introny_bastille_paper/confirm_introns_test -s '__' -mr 1000
+# ./confirm_introns.py -ca adapter_promoter -cb barcodes_r -fq 100k_sample.fastq -rd rnaseq_references -o confirm_introns_test -s '__' -mr 1000

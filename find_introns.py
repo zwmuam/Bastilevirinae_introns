@@ -90,6 +90,11 @@ from tweaks import run_external, logger, log_format, default_threads
               required=False,
               type=click.Path(exists=True, path_type=Path),
               help='table with taxonomic annotations')
+@click.option("-b", "--borders",
+                required=False,
+                default=15,
+                type=int,
+                help='flanking regions upstream and downstream of the intron exported in the intron fna file')
 def find_introns(fasta: Path,
                  cms: Path,
                  mincmscore: int,
@@ -103,7 +108,8 @@ def find_introns(fasta: Path,
                  hmmtool: str,
                  gff: Path,
                  phrog_table: Path,
-                 taxon_table: Path):
+                 taxon_table: Path,
+                 borders: int):
     """
     The script searching for intron-split genes in phage genomes.
     It uses Infernal to detect sequences similar to covariance models from the custom database
@@ -127,11 +133,7 @@ def find_introns(fasta: Path,
     :param gff: GFF file with annotations (optional, skips infernal search)
     :param phrog_table: table with PHROG annotations
     :param taxon_table: table with taxonomic annotations
-    USAGE EXAMPLE:
-    ./intron_analysis.py -f /home/michalstanoch/data/Introny_bastille_paper/genomy/RefSeq_Bastillevirinae_23062023.fasta
-    -c /home/michalstanoch/data/Introny_bastille_paper/intron_repo/databases/Merged.1.GISSD_IRFAM.cm
-    -h /home/michalstanoch/data/Introny_bastille_paper/intron_repo/databases/Phrogs4_HMMer3.hmm
-    -o /home/michalstanoch/data/Introny_bastille_paper/intron_repo/final_paper_run
+    :param borders: flanking regions upstream and downstream of the intron exported in the intron fna file
     """
     # set up main log in the output directory
     logger.add(out.joinpath('intron_analysis.log').as_posix(), format=log_format)
@@ -194,6 +196,13 @@ def find_introns(fasta: Path,
                                             seq_lengths)
 
     gene_structure.save_gff(out.joinpath('gene_structure.gff'))
+
+    introns_to_export = gene_structure.children(Intron)
+    if borders:
+        introns_to_export = introns_to_export.contexts(borders)
+
+    introns_to_export.annotation_sequences(input_fasta=fasta,
+                                           output_fasta=out.joinpath(f'intron_sequences_flank_{borders}.fna'))
 
     if phrog_table:
 
@@ -279,8 +288,4 @@ if __name__ == '__main__':
     find_introns()
 
 # USAGE EXAMPLE:
-# ./intron_analysis.py -f /home/michalstanoch/data/Introny_bastille_paper/genomy/RefSeq_Bastillevirinae_23062023.fasta
-# -c /home/michalstanoch/data/Introny_bastille_paper/intron_repo/databases/Merged.1.GISSD_IRFAM.cm
-# -h /home/michalstanoch/data/Introny_bastille_paper/intron_repo/databases/Phrogs4_HMMer3.hmm
-# -o /home/michalstanoch/data/Introny_bastille_paper/intron_repo/final_paper_run
-# -w /home/michalstanoch/data/Introny_bastille_paper/INTRON_STATS/taxonomy.xlsx
+# ./find_introns.py -f genomes.fasta -o genomes_intron_pred -w taxonomy.xlsx
