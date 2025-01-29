@@ -116,7 +116,6 @@ linearturbofold -i clade_8.fna -o clade_8_ltf  -v --pf --bpp
 
 LinearTurboFold alignements/structures, tsv annotations and json colour code (provided by reannotate_introns.py) were used to generate SVG visualisations using R2DT:
 ```
-r2dt_from_gff.py -i All_introns_annotation.gff -o structure_annotation
 # In the Docker container:
 r2dt.py templatefree ${intron_structure}.fasta ${intron_structure}
 python3 enrich_json.py --input-json ${intron_structure}.json --input-data ${intron_structure}.annot --output ${intron_structure}.enriched.json
