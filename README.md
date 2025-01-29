@@ -110,7 +110,7 @@ This command uses the automatic model selection and performs 1000 ultrafast boot
 
 The secondary structure of the introns was predicted using LinearTurboFold:
 ```
-./LinearTurboFold.py -f Unique_vs_RF00028.pruned.fasta -o Unique_vs_RF00028.pruned
+linearturbofold -i clade_8.fna -o clade_8_ltf  -v --pf --bpp
 ```
 
 
