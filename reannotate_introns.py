@@ -86,17 +86,9 @@ def annotate_introns(fasta: Path,
     """
     This script annotates sequences in a fasta file with protein domains and RNA families.
     It uses Infernal to detect RNA families and HMMer3 to detect protein domains and
-    combines the results into a single gff file and annotation files (one per sequence) compatible with r2dt.
-    :param fasta: fasta file with input sequences to annotate
-    :param cms: InfeRNAl cm database with family models e.g. GSIID/RFAM (default: Merged.1.GISSD_IRFAM.cm from the databases dir)
-    :param mincmscore: minimum score for InfeRNAl hits (default: 20)
-    :param cmtool: InfeRNAl program used to resolve gene structure [cmsearch/cmalign] (default: cmsearch)
-    :param hmm: HMMER hmm database with family models e.g. PHROGS (default: phrogs4 from the databases dir)
-    :param minhmmscore: minimum score for HMMer3 hits (default: 20)
-    :param out: output directory for the results (included gff and ubdirectory with r2dt files)
-    :param hmmtool: HMMER program used to resolve gene structure [hmmscan/hmmsearch] (default: hmmscan)
-    :param threads: number of CPU threads to use (default: all available - 1)
-    :param phrog_table: table with PHROG annotations (default: phrog_annot_v4.tsv from the databases dir)
+    combines the results into a single gff file and annotation files compatible with r2dt (one per sequence).
+
+    Usage example: reannotate_introns.py -f GIISSD_and_Bastille.fasta -o Annotated_GIISSD_and_Bastille (add -u for unaligned sequees)
     """
     # set up tmp intermediate directory and logger
 
@@ -234,12 +226,3 @@ def export_colour_dict(colour_dict: dict,
 
 if __name__ == '__main__':
     annotate_introns()
-
-"""
-USAGE EXAMPLE:
-reannotate_introns.py
--f GIISSD_and_Bastille.fasta 
--o Annotated_GIISSD_and_Bastille
-
-the output includes a gff file with the annotation and a tsv file for each input sequence with the annotation in r2dt format
-"""
