@@ -50,7 +50,7 @@ def alignment_stats(fasta: Path,
     """
     Calculate basic statistics for a sequence alignment guided by a reference sequence/model (or raw fasta file)
     
-    Example usage: alignment_statistics.py -f alignment.fasta -r 251 -o alignment_stats.xlsx
+    Usage example: alignment_statistics.py -f alignment.fasta -r 251 -o alignment_stats.xlsx
     """
     msa = list(SeqIO.parse(fasta, "fasta"))
 
