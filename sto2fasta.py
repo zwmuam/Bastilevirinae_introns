@@ -19,11 +19,12 @@ from Bio import SeqIO
 @click.option("-s", "--stockholm",
               required=True,
               type=click.Path(exists=True, path_type=Path),
-              help='sto alignment file to convert')
+              help='stockholm (sto) alignment file to convert')
 def convert_and_save(stockholm: Path):
     """
     Convert stockholm file to fasta format and write to a new file in the same directory
-    :param stockholm: sto file to convert
+    
+    Usage example: sto2fasta.py -s alignment.sto
     """
     out_file = stockholm.with_suffix('.fasta')
     records = SeqIO.parse(stockholm, "stockholm")
@@ -33,7 +34,3 @@ def convert_and_save(stockholm: Path):
 
 if __name__ == '__main__':
     convert_and_save()
-
-"""
-example usage: sto2fasta.py -s alignment.sto
-"""
