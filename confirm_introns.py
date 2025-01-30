@@ -14,7 +14,7 @@ from pathlib import Path
 from random import randint
 
 import click
-from porechop import porechop_custom
+import porechop_custom
 
 from annotations import Exon, Intron, Gene, AnnotationBase
 from tweaks import run_external
