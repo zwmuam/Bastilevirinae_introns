@@ -63,13 +63,6 @@ If you have spliced cDNA reads similar to these described in the paper pass them
 The script uses minimap2 to map reads to the genome and samtools to extract splicing sites. The "-s" argument is used to specify the separator between the barcode and the read name in the fastq file. The "-mr" argument is used to specify the maximum number of reads to process.
 
 
-Introns for the alignment can be extracted using:
-```
-./get_intron_sequences.py -f genomes.fasta -o introns.fna
-```
-By default the introns are extracted with 15-nt exon flanks compared to the original annotation to include any splicing-related elements like IGS etc but this can be changed using "-x" argument.
-
-
 To re-annotate introns (useful if you added introns from external databases like GISSD) and generate R2DT-compatible annotations use:
 ```
 ./reannotate_introns.py -f GIISSD_and_Bastille_introns.fasta -o Annotated_GIISSD_and_Bastille_introns
