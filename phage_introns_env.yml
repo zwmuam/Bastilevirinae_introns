@@ -24,6 +24,7 @@ dependencies:
   - hmmer=3.4=hdbdd923_1
   - htslib=1.20=h81da01d_0
   - infernal=1.1.5=pl5321h031d066_1
+  - iqtree=2.3.6=h503566f_1
   - joblib=1.4.2=pyhd8ed1ab_0
   - k8=0.2.5=hdcf5f25_4
   - kaleido-core=0.2.1=h3644ca4_0
@@ -70,6 +71,7 @@ dependencies:
   - perl=5.32.1=7_hd590300_perl5
   - pip=24.0=pyhd8ed1ab_0
   - plotly=5.22.0=pyhd8ed1ab_0
+  - porechop=0.2.4=py311he264feb_9
   - python=3.11.0=he550d4f_1_cpython
   - python-dateutil=2.9.0=pyhd8ed1ab_0
   - python-kaleido=0.2.1=pyhd8ed1ab_0
