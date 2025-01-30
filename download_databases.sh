@@ -7,7 +7,7 @@ hmmpress ./databases/Phrogs4_HMMer3.hmm
 cmpress ./databases/Merged.1.GISSD_IRFAM.cm
 
 
-# If you want to replace PHROGs with newer version, you need to recalculae HMMer models (see commented code below)
+# If you want to replace PHROGs with a newer version, you need to recalculate HMMer models (see commented code below)
 # Exact URLs and paths may vary from version to version
 : '
 wget -O ./databases/phrog_annot_v4.tsv "https://phrogs.lmge.uca.fr/downloads_from_website/phrog_annot_v4.tsv" # update this to download newer version
