@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-The script uses nanopore sequencing reads to confirm the splicing of predicted introns and
+This script uses nanopore sequencing reads to confirm splicing of the predicted introns and
 maps exact splicing sites for higly represented variants.
 """
 
@@ -139,7 +139,6 @@ def rnaseq_analysis(custom_adapters: Path,
             print(f"Reference {reference_name} not found")
     filtered_introns.save_gff(output.joinpath('Introns.gff'))
 
-
 def trim_and_demultiplex(read_fastq: Path,
                          custom_adapters: Path,
                          custom_barcodes: Path,
@@ -181,7 +180,6 @@ def trim_and_demultiplex(read_fastq: Path,
             output_files.append(filtered_fastq)
     return output_files
 
-
 def map_to_reference(reference: Path,
                      read_fastq: Path,
                      minimap_sorted_dir: Path,
@@ -189,7 +187,7 @@ def map_to_reference(reference: Path,
     """
     Map reads to reference gene sequence
     using split-read mapping with minimap2
-    and prost-process the files
+    and post-process the files
     by sorting and filtering alignments
     :param reference: path to reference fasta file with gene sequence
     :param read_fastq: path to fastq file with reads to map

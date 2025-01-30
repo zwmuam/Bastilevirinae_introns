@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Open fasta-formatted alignment and filter of all sequences
+Open fasta-formatted alignment and filter all sequences
 with less than N non-gap characters
 """
 

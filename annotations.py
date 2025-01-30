@@ -19,7 +19,6 @@ from Bio import SeqIO, SeqFeature as Feature, Seq
 
 from tweaks import logger, extensions, parse_fasta, frantic_search
 
-
 class Annotation:
     """
     Base class for all sequence annotations
@@ -70,8 +69,8 @@ class Annotation:
 
     def __len__(self) -> int:
         """
-        Calculate length of domain in AA
-        :return: length of domain in AA
+        Calculate domain length in AA
+        :return: domain length in AA
         """
         return self.end - self.start + 1
 
@@ -157,7 +156,7 @@ class Annotation:
     @classmethod
     def from_id_string(cls, repr_str: str) -> 'Annotation':
         """
-        Create an instance from its string representation
+        Create an instance from the string representation
         """
         seq_id, subtype, model_id, start, end, strand = repr_str.split('__')
         return cls(seq_id=seq_id,
@@ -206,7 +205,7 @@ class Annotation:
         """
         Create a new domain that extends the current one
         by the specified number of residues on both sides
-        :param flank: number of residues to extend the domain by
+        :param flank: number of residues by which to extend the domain
         :return: extended domain
         """
         start, end = self.start - flank, self.end + flank
@@ -234,8 +233,8 @@ class Annotation:
                  other: 'Annotation') -> float:
         """
         Check if any of the two analysed domains overlap
-        on more than threshold fraction of its length with the other
-        :param other:  domain to compare with
+        on more than the threshold fraction of its length with the other
+        :param other: domain to compare with
         :return: are these domains overlapping?
         """
         if self.end >= other.start and self.start <= other.end:
@@ -288,7 +287,7 @@ class Annotation:
         """
         Adjust coordinates of the annotation
         in relation to the other annotation
-        (assume that star of the other annotation is start of the sequence)
+        (assume that start of the other annotation is start of the sequence)
         :return: adjusted annotation (with coordinates relative to the other annotation)
         """
         start, end = self.start - annotation.start + 1, self.end - annotation.start + 1
@@ -345,9 +344,9 @@ class Annotation:
     @staticmethod
     def top_scoring(elem_list: List['Annotation']):
         """
-        Given a list of annotations choose top-scoring one
+        Given a list of annotations choose the top-scoring one
         :param elem_list: list of two or more annotations
-        :return: Top scoring domain from the cluster
+        :return: top scoring domain from the cluster
         """
         ranking = sorted(elem_list, key=lambda e: e.score, reverse=True)
         return ranking[0]
@@ -368,11 +367,10 @@ class Annotation:
     def get_model_name(self,
                        id2name_dict: Dict[str, str]) -> str:
         """
-          Get the name of the model based on id
-          :param id2name_dict: dictionary with id as key and name as value
+          Get the name of the model based on the id
+          :param id2name_dict: dictionary with id as the key and name as the value
           """
         self.model_name = id2name_dict[self.model_id]
-
 
 class InfernalAlignment(Annotation):
     """
@@ -592,10 +590,14 @@ class Gene(Annotation):
                    domains: List[PutativeExon],
                    min_intron: int = 20): # TODO ->
         """
-        TODO add docstring
-        :param domains:
-        :param min_intron:
-        :return:
+        Creates a gene object from a list of putative exons 
+        by sorting them based on the start position. The exons 
+        are connected and an intron is assigned if the gap 
+        is larger than the specified minimum intron length        
+        :param domains: list of putative exons to be used to construct
+        the gene object 
+        :param min_intron: minimum length to assign an intron in a gap 
+        :return: gene object with assigned exons and introns 
         """
         xxx = [type(d) for d in domains] # TODO WTF?
         assert all([isinstance(d, PutativeExon) for d in
@@ -650,7 +652,7 @@ class AnnotationTrack(list):
         Remove all annotations with score below the threshold
         :param threshold: minimum score to keep the annotation
         :param recursive: remove annotations nested in the deeper layers (e.g. exons within genes)
-        :return:
+        :return: annotation track if above threshold 
         """
         above_threshold = [a for a in self if a.score >= threshold]
         if recursive:
@@ -695,10 +697,10 @@ class AnnotationTrack(list):
                          culled: bool = True):
         """
         Include nested annotations that overlap with any of the annotations in the track
-        :param annotations:
-        :param overlap_threshold:
-        :param culled:
-        :return:
+        :param annotations: annotation track containing annotations to check for overlaps 
+        :param overlap_threshold: minimum overlap threshold to consider docking 
+        :param culled: whether the annotations were culled or not, default = True 
+        :return: modified annotations in place 
         """
         for a in self:
             a.dock_overlapping(annotations, overlap_threshold, culled)
@@ -761,7 +763,7 @@ class AnnotationTrack(list):
                 keys: str) -> Dict[str, Dict[str, Annotation]]:
         """
         Convert AnnotationBase to a dictionary
-        using values of specified attribute as keys
+        using values of a specified attribute as keys
         :param keys: attribute to use as a key
         :return: dictionary with annotations
         """
@@ -922,10 +924,10 @@ class AnnotationBase(dict):
                 other: 'AnnotationBase',
                 sort: bool = True):
         """
-        Merge two annotation bases together add annotations and tracks
+        Merge two annotation bases together, add annotations and tracks
 
-        :param other:
-        :param sort:
+        :param other: the AnnotationBase to merge with 
+        :param sort: whether to sort annotations after merging
         """
         # add new tracks or append annotations to existing tracks
         for seq_id, track in other.items():
@@ -940,7 +942,7 @@ class AnnotationBase(dict):
         """
         Extend all annotations from both sides
         by a specified number of flanking residues
-        :param flank: number of residues to extend the annotations by
+        :param flank: number of residues by which to extend the annotations
         :return: extended annotations
         """
         return AnnotationBase({seq_id: track.contexts(flank) for seq_id, track in self.items()})
@@ -958,11 +960,11 @@ class AnnotationBase(dict):
                          culled: bool = True):
         """
         Include nested annotations that overlap with any of the annotations in the track
-        :param annotations:
-        :param overlap_threshold:
-        :param culled:
-        :return:
-        """
+        :param annotations: annotation track containing annotations to check for overlaps
+        :param overlap_threshold: minimum overlap threshold to consider docking
+        :param culled: whether the annotations were culled or not, default = True
+        :return: modified annotations in place
+        """                            
         for seq_id, track in self.items():
             if seq_id in annotations:
                 track.dock_overlapping(annotations[seq_id], overlap_threshold, culled)
@@ -971,7 +973,7 @@ class AnnotationBase(dict):
                 keys: str) -> Dict[str, Dict[str, Annotation]]:
         """
         Convert AnnotationBase to a dictionary
-        using values of specified attribute as keys
+        using values of a specified attribute as keys
         :param keys: attribute to use as a key
         :return: dictionary with annotations
         """
@@ -992,7 +994,7 @@ class AnnotationBase(dict):
         Remove all annotations with score below the threshold
         :param threshold: score threshold below which annotations are removed
         :param recursive: should the method be applied to nested annotations?
-        :return:
+        :return: annotations above a certain threshold 
         """
         return AnnotationBase(
             {seq_id: track.filter_score(threshold=threshold, recursive=recursive) for seq_id, track in self.items()})
@@ -1024,8 +1026,8 @@ class AnnotationBase(dict):
     def get_model_names(self,
                         id2name_dict: Dict[str, str]):
         """
-        Get the name of the model based on id
-        :param id2name_dict: dictionary with id as key and name as value
+        Get the name of the model based on the id
+        :param id2name_dict: dictionary with the id as key and name as the value
         """
         [track.get_model_names(id2name_dict) for track in self.values()]
 
@@ -1044,7 +1046,7 @@ class AnnotationBase(dict):
             used_seq_ids.add(seq_id)
             yield seq_id, seq, self[seq_id]
 
-        # check any sequence is missing
+        # check if any sequence is missing
         not_in_self = used_seq_ids - set(self.keys())
         not_in_fasta = set(self.keys()) - used_seq_ids
         assert not not_in_self, f'No annotations for sequences: {not_in_self}'
