@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Simple utility script heavily based on Biopython used to convert .sto files .fasta alignment format.
+Simple utility script heavily based on Biopython used to convert .sto files to .fasta alignment format.
 """
 
 __author__ = "Jakub Barylski"
