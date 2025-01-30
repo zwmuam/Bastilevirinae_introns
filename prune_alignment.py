@@ -30,8 +30,8 @@ def filter_short_alignments(fasta: Path,
                             min_length: int):
     """
     Filter out sequences with less than N aligned characters from a multiple sequence alignment
-    :param fasta: path to a fasta file with MSA
-    :param min_length: minimum length of an aligned sequence to keep
+    
+    Usage example: ./prune_alignment.py -f aligned.fasta -l 50
     """
     sequences = []
     skipped = 0
