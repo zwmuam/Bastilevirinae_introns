@@ -119,7 +119,7 @@ def find_introns(fasta: Path,
     aligned with protein families to resolve structure of split genes.
     Additionally, the script reports the basic statistics of the search
     and plots intron distribution and lengths.
-    :param fasta: fasta file of input genome sequences
+    :param fasta: fasta file with input genome sequences
     :param cms: InfeRNAl cm database with family models e.g. GSIID/RFAM
     :param mincmscore: minimum score for InfeRNAl hits
     :param hmm: HMMER hmm database with family models e.g. PHROGS
@@ -233,7 +233,7 @@ def find_introns(fasta: Path,
 def translate_fna(in_fna: Path,
                   out_faa: Path) -> Tuple[Path, Dict[str, int]]:
     """
-    Translate DNA sequences to protein sequences in three forward open reading frames
+    Translate DNA sequences to protein sequences in three forward reading frames
     :param in_fna: fasta file with input DNA sequences
     :param out_faa: output fasta file with protein sequences
     :return: output fasta file with protein sequences and dictionary with DNA sequence lengths
