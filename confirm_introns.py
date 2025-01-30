@@ -76,16 +76,8 @@ def rnaseq_analysis(custom_adapters: Path,
                     min_mean_q: float):
     """
     De-multiplex reads and map them to respective references
-    :param custom_adapters:
-    :param custom_barcodes: reverse primers fasta
-    :param read_fastq: fastq file with reads
-    :param clean_reads: directory with demultiplexed clean reads
-    :param reference_dir: directory with reference fasta files
-    :param output: output directory
-    :param separator: separator for the primer names
-    :param max_reads: number of reads to subsample
-    :param min_length: minimum read length to keep during quality filtering
-    :param min_mean_q: minimum mean quality to keep during read filtering
+    
+    Usage example: ./confirm_introns.py -ca custom_adapters -cb custom_barcodes -fq reads.fastq -rd reference_genomes_dir -o outpu_dir -s '__' -mr 1000
     """
     assert read_fastq or clean_reads, 'Provide either fastq to trim or clean_reads'
     output.mkdir()
@@ -301,6 +293,4 @@ def subsample_bam(bam: Path,
 
 if __name__ == '__main__':
     rnaseq_analysis()
-
-# USAGE EXAMPLE:
-# ./confirm_introns.py -ca adapter_promoter -cb barcodes_r -fq 100k_sample.fastq -rd rnaseq_references -o confirm_introns_test -s '__' -mr 1000
+  
