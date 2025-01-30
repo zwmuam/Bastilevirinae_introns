@@ -119,21 +119,8 @@ def find_introns(fasta: Path,
     aligned with protein families to resolve structure of split genes.
     Additionally, the script reports the basic statistics of the search
     and plots intron distribution and lengths.
-    :param fasta: fasta file with input genome sequences
-    :param cms: InfeRNAl cm database with family models e.g. GSIID/RFAM
-    :param mincmscore: minimum score for InfeRNAl hits
-    :param hmm: HMMER hmm database with family models e.g. PHROGS
-    :param minhmmscore: minimum score for HMMer3 hits
-    :param out: output directory for the results
-    :param context: size of the neighborhood for gene structure analysis (from each side)
-    :param threads: number of CPU threads to use
-    :param cmtblout: InfeRNAl tblout file with cmscan/cmsearch results (optional, skips infernal search)
-    :param cmtool: InfeRNAl program used to search for intron RNA motifs [cmscan/cmsearch]
-    :param hmmtool: HMMER program used to resolve gene structure [hmmscan/hmmsearch]
-    :param gff: GFF file with annotations (optional, skips infernal search)
-    :param phrog_table: table with PHROG annotations
-    :param taxon_table: table with taxonomic annotations
-    :param borders: flanking regions upstream and downstream of the intron exported in the intron fna file
+    
+    Usage example: ./find_introns.py -f genomes.fasta -o genomes_intron_pred -w taxonomy.xlsx (optional)
     """
     # set up main log in the output directory
     logger.add(out.joinpath('intron_analysis.log').as_posix(), format=log_format)
@@ -287,5 +274,3 @@ def resolve_gene_structure(hmm_alignments: AnnotationBase,
 if __name__ == '__main__':
     find_introns()
 
-# USAGE EXAMPLE:
-# ./find_introns.py -f genomes.fasta -o genomes_intron_pred -w taxonomy.xlsx
