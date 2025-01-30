@@ -51,7 +51,7 @@ for form in extensions:  # add gzip compressed files
 def frantic_search(dictionary: Dict[Hashable, Any],
                    *possible_keys: Hashable):
     """
-    Find first of several keys that is in a dictionary and return value
+    Find first of the several keys that are in a dictionary and return the value
     :param dictionary: dictionary to search
     :param possible_keys: any number of possible keys (preferred first)
     :return: dictionary[first_found_key]
@@ -169,7 +169,7 @@ def run_external(command: List[str],
     """
     Run external (non-python) command
     :param command: list of the expressions
-                    that make up shell command e.g. ['ls', '-lh']
+                    that make up the shell command e.g. ['ls', '-lh']
     :param stdout: do not print the log messages
     :param stdin: input for the command
     """
@@ -211,8 +211,8 @@ def parse_fasta(fasta: Path):
 def checkpoint(funct: callable):
     """
     Simple serialization decorator
-    that saves function result
-    if exacted output file don't exist or is empty
+    that saves the function result
+    if exacted output file doesn't exist or is empty
     or read it if it is non-empty
     @param funct: function to wrap
     @param pickle_path: a path to an output file
