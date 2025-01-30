@@ -19,6 +19,7 @@ from Bio import SeqIO, SeqFeature as Feature, Seq
 
 from tweaks import logger, extensions, parse_fasta, frantic_search
 
+
 class Annotation:
     """
     Base class for all sequence annotations
@@ -205,7 +206,7 @@ class Annotation:
         """
         Create a new domain that extends the current one
         by the specified number of residues on both sides
-        :param flank: number of residues by which to extend the domain
+        :param flank: the number of residues to add to each side of the annotation
         :return: extended domain
         """
         start, end = self.start - flank, self.end + flank
@@ -274,7 +275,7 @@ class Annotation:
                          culled: bool = True):
         """
         Include nested annotations that overlap with the current one
-        into 'self.nested' list
+        into 'self.nested' list TODO
         """
         assert self.seq_id == annotations.seq_id, 'Cannot dock annotations from different sequences'
         overlapping = AnnotationTrack(self.seq_id, [a for a in annotations if self.overlaps(a) > overlap_threshold])
@@ -371,6 +372,7 @@ class Annotation:
           :param id2name_dict: dictionary with id as the key and name as the value
           """
         self.model_name = id2name_dict[self.model_id]
+
 
 class InfernalAlignment(Annotation):
     """
@@ -505,7 +507,7 @@ class MmseqsAlignment(Annotation):
                             method=self.method)
 
 
-class DnaAlignment(Annotation): # TODO DnaAlignment
+class DnaAlignment(Annotation):
     """
     Object representing a single
     MMseqs2 hit
@@ -590,13 +592,10 @@ class Gene(Annotation):
                    domains: List[PutativeExon],
                    min_intron: int = 20): # TODO ->
         """
-        Creates a gene object from a list of putative exons 
-        by sorting them based on the start position. The exons 
-        are connected and an intron is assigned if the gap 
-        is larger than the specified minimum intron length        
-        :param domains: list of putative exons to be used to construct
-        the gene object 
-        :param min_intron: minimum length to assign an intron in a gap 
+        Creates a gene object from a list of putative exons by sorting them
+        based on the start position and adding introns (if needed).
+        :param domains: list of putative exons
+        :param min_intron: minimum length of gap to be considered as intron
         :return: gene object with assigned exons and introns 
         """
         xxx = [type(d) for d in domains] # TODO WTF?
@@ -652,7 +651,7 @@ class AnnotationTrack(list):
         Remove all annotations with score below the threshold
         :param threshold: minimum score to keep the annotation
         :param recursive: remove annotations nested in the deeper layers (e.g. exons within genes)
-        :return: annotation track if above threshold 
+        :return: track that includes only annotations with scores above the threshold
         """
         above_threshold = [a for a in self if a.score >= threshold]
         if recursive:
@@ -696,6 +695,7 @@ class AnnotationTrack(list):
                          overlap_threshold: float = 0.5,
                          culled: bool = True):
         """
+        TODO
         Include nested annotations that overlap with any of the annotations in the track
         :param annotations: annotation track containing annotations to check for overlaps 
         :param overlap_threshold: minimum overlap threshold to consider docking 
@@ -924,12 +924,11 @@ class AnnotationBase(dict):
                 other: 'AnnotationBase',
                 sort: bool = True):
         """
-        Merge two annotation bases together, add annotations and tracks
-
-        :param other: the AnnotationBase to merge with 
+        Merge another AnnotationBase with this one.
+        Annotations are added to appropriate tracks of 'self'
+        :param other: the AnnotationBase to merge with
         :param sort: whether to sort annotations after merging
         """
-        # add new tracks or append annotations to existing tracks
         for seq_id, track in other.items():
             if seq_id not in self:
                 self[seq_id] = track
@@ -960,10 +959,9 @@ class AnnotationBase(dict):
                          culled: bool = True):
         """
         Include nested annotations that overlap with any of the annotations in the track
-        :param annotations: annotation track containing annotations to check for overlaps
-        :param overlap_threshold: minimum overlap threshold to consider docking
+        :param annotations: AnnotationBase containing annotations to check for overlaps
+        :param overlap_threshold: minimum overlap threshold to dock annotation a nested
         :param culled: whether the annotations were culled or not, default = True
-        :return: modified annotations in place
         """                            
         for seq_id, track in self.items():
             if seq_id in annotations:
@@ -994,7 +992,7 @@ class AnnotationBase(dict):
         Remove all annotations with score below the threshold
         :param threshold: score threshold below which annotations are removed
         :param recursive: should the method be applied to nested annotations?
-        :return: annotations above a certain threshold 
+        :return: AnnotationBase that includes only annotations with scores above the threshold
         """
         return AnnotationBase(
             {seq_id: track.filter_score(threshold=threshold, recursive=recursive) for seq_id, track in self.items()})
