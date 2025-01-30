@@ -49,10 +49,8 @@ def alignment_stats(fasta: Path,
                     write_matrix: bool):
     """
     Calculate basic statistics for a sequence alignment guided by a reference sequence/model (or raw fasta file)
-    :param fasta: path to the fasta file with the alignment/sequences
-    :param unaligned: set to True if the sequences are unaligned (to analyze raw fasta file)
-    :param ref_len: length of the reference sequence/model used for alignment (used to calculate coverage)
-    :param write_matrix: write sequence identity matrix to the output file
+    
+    Example usage: alignment_statistics.py -f alignment.fasta -r 251 -o alignment_stats.xlsx
     """
     msa = list(SeqIO.parse(fasta, "fasta"))
 
@@ -291,8 +289,4 @@ def group_similarity(matrix) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 if __name__ == "__main__":
     alignment_stats()
-
-"""
-Example usage:
-alignment_statistics.py -f alignment.fasta -r 251 -o alignment_stats.xlsx
-"""
+  
