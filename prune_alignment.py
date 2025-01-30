@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Open fasta-formatted alignment and filter out all sequences
-with less than N non-gap characters
+Open fasta-formatted alignment and filter out sequences with less than N non-gap characters
 """
 
 __author__ = "Jakub Barylski"
