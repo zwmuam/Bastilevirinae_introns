@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-The script searches for infernal hits to intron-related covariance models in phage genomes and
-then uses HMMER to resolve gene structure in the neighborhood of the hits.
+This script searches for infernal hits to intron-related covariance models in phage genomes and
+then uses HMMER to resolve the gene structure in the neighborhood of the hits.
 """
 
 __author__ = "Jakub Barylski"
@@ -111,15 +111,15 @@ def find_introns(fasta: Path,
                  taxon_table: Path,
                  borders: int):
     """
-    The script searching for intron-split genes in phage genomes.
-    It uses Infernal to detect sequences similar to covariance models from the custom database
+    Script searching for intron-split genes in phage genomes.
+    Uses Infernal to detect sequences similar to covariance models from the custom database
     compiled from RFAM (general database of structural RNAs) and GISSD (specialized group I intron database).
-    After the initial search, low-scoring hits or hits embedded in higher-scouring alignments are removed.
-    Then, regions 2500bp-long regions flanking hits are extracted (merging any overlaps) and
+    After the initial search, low-scoring hits or hits embedded in higher-scoring alignments are removed.
+    Then 2500bp-long regions flanking hits are extracted (merging any overlaps) and
     aligned with protein families to resolve structure of split genes.
     Additionally, the script reports the basic statistics of the search
-    and plots of intron distribution and lengths.
-    :param fasta: fasta file input genome sequences
+    and plots intron distribution and lengths.
+    :param fasta: fasta file of input genome sequences
     :param cms: InfeRNAl cm database with family models e.g. GSIID/RFAM
     :param mincmscore: minimum score for InfeRNAl hits
     :param hmm: HMMER hmm database with family models e.g. PHROGS
@@ -129,7 +129,7 @@ def find_introns(fasta: Path,
     :param threads: number of CPU threads to use
     :param cmtblout: InfeRNAl tblout file with cmscan/cmsearch results (optional, skips infernal search)
     :param cmtool: InfeRNAl program used to search for intron RNA motifs [cmscan/cmsearch]
-    :param hmmtool: HMMER program used to resolve for gene structure [hmmscan/hmmsearch]
+    :param hmmtool: HMMER program used to resolve gene structure [hmmscan/hmmsearch]
     :param gff: GFF file with annotations (optional, skips infernal search)
     :param phrog_table: table with PHROG annotations
     :param taxon_table: table with taxonomic annotations
@@ -233,7 +233,7 @@ def find_introns(fasta: Path,
 def translate_fna(in_fna: Path,
                   out_faa: Path) -> Tuple[Path, Dict[str, int]]:
     """
-    Translate DNA sequences to protein sequences in three forward reading frames
+    Translate DNA sequences to protein sequences in three forward open reading frames
     :param in_fna: fasta file with input DNA sequences
     :param out_faa: output fasta file with protein sequences
     :return: output fasta file with protein sequences and dictionary with DNA sequence lengths
