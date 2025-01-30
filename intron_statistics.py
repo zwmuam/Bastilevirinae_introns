@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Module used by "find_introns.py" to calculate and visualize statstical analysis of the introns detected:
+Module used in "find_introns.py" to calculate and visualize the statistical analysis of the detected introns:
 lengths, split genes, types of embedded nucleases, genomic and taxonomic distribution etc.
 """
 
@@ -28,7 +28,7 @@ def plot_intron_distribution(sequence_annotations: AnnotationBase,
     """
     Plot how many introns are in genes aligned to each HMM
     :param sequence_annotations: AnnotationBase with genes and nested introns
-    :param id2name_dict: dictionary with id as key and name as value
+    :param id2name_dict: dictionary with id as the key and name as the value
     """
     to_count = []
     for seq_id, annotations in sequence_annotations.items():
@@ -51,7 +51,7 @@ def plot_intron_lengths(sequence_annotations: AnnotationBase,
     """
     Generate a plot of intron length distributions for each homing nuclease (or no homing nuclease)
     :param sequence_annotations: AnnotationBase with genes and nested introns
-    :param id2name_dict: dictionary with id as key and name as value
+    :param id2name_dict: dictionary with id as the key and name as the value
     """
     genehmm2intronlengths = []
     for seq_id, annotations in sequence_annotations.items():
@@ -74,9 +74,9 @@ def plot_intron_lengths(sequence_annotations: AnnotationBase,
                 genehmm2intronlengths.append({'HMM': hmm_string, 'Intron Length': intron_length, 'CDS Length': total_cds_length})
     plot_df = pd.DataFrame.from_records(genehmm2intronlengths)
 
-    # calculate Pearson correlation coefficient between intron and CDS lengths
+    # calculate the Pearson correlation coefficient between intron and CDS lengths
     intron_cds_correlation = plot_df['Intron Length'].corr(plot_df['CDS Length'], method='pearson')
-    # plot intron and CDS length distributions as scatter plot
+    # plot intron and CDS length distributions as a scatter plot
     fig = px.scatter(plot_df, x='Intron Length',
                      y='CDS Length',
                      color='HMM',
@@ -92,7 +92,7 @@ def introns_in_genomes(sequence_annotations: AnnotationBase,
     """
     Create a table of intron counts in each taxon
     :param sequence_annotations: AnnotationBase with genes and nested introns
-    :param id2name_dict: dictionary with id as key and name as value`
+    :param id2name_dict: dictionary with id as the key and name as the value`
     :return: pandas DataFrame with intron counts and names
     """
 

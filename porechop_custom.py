@@ -1,5 +1,5 @@
 """
-Mofified version of porechop.py that enables custom adapters and barcodes and
+Mofified version of porechop.py that enables the use of custom adapters and barcodes and
 facilitates the use of porechop as a Python module.
 
 Modofied by Jakub Barylski (jakub.barylski@gmail.com)

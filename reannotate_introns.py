@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-The script annotates sequences in fasta file with protein domains and RNA families.
-It was used to re-annotate Bastillevirine and GIISSD introns sequences
+This script annotates sequences in a fasta file with protein domains and RNA families.
+It was used to re-annotate Bastillevirinae and GIISSD intron sequences
 with PHROG, RFAM and GSIID ribozyme and homing endonuclease families.
 """
 
@@ -67,7 +67,7 @@ from tweaks import run_external, logger, log_format, default_threads
               required=False,
               default='hmmscan',
               type=click.Choice(['hmmsearch', 'hmmscan']),
-              help='HMMER program used to resolve for gene structure [hmmscan/hmmsearch]')
+              help='HMMER program used to resolve gene structure [hmmscan/hmmsearch]')
 @click.option("-r", "--phrog_table",
               required=False,
               default=Path(__file__).parent.joinpath('databases', 'phrog_annot_v4.tsv'),
@@ -84,17 +84,17 @@ def annotate_introns(fasta: Path,
                      threads: int,
                      phrog_table: Path):
     """
-    The script annotates sequences in fasta file with protein domains and RNA families.
+    This script annotates sequences in a fasta file with protein domains and RNA families.
     It uses Infernal to detect RNA families and HMMer3 to detect protein domains and
     combines the results into a single gff file and annotation files (one per sequence) compatible with r2dt.
     :param fasta: fasta file with input sequences to annotate
     :param cms: InfeRNAl cm database with family models e.g. GSIID/RFAM (default: Merged.1.GISSD_IRFAM.cm from the databases dir)
     :param mincmscore: minimum score for InfeRNAl hits (default: 20)
-    :param cmtool: InfeRNAl program used to resolve for gene structure [cmsearch/cmalign] (default: cmsearch)
+    :param cmtool: InfeRNAl program used to resolve gene structure [cmsearch/cmalign] (default: cmsearch)
     :param hmm: HMMER hmm database with family models e.g. PHROGS (default: phrogs4 from the databases dir)
     :param minhmmscore: minimum score for HMMer3 hits (default: 20)
     :param out: output directory for the results (included gff and ubdirectory with r2dt files)
-    :param hmmtool: HMMER program used to resolve for gene structure [hmmscan/hmmsearch] (default: hmmscan)
+    :param hmmtool: HMMER program used to resolve gene structure [hmmscan/hmmsearch] (default: hmmscan)
     :param threads: number of CPU threads to use (default: all available - 1)
     :param phrog_table: table with PHROG annotations (default: phrog_annot_v4.tsv from the databases dir)
     """

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Open fasta-formatted alignment and filter all sequences
+Open fasta-formatted alignment and filter out all sequences
 with less than N non-gap characters
 """
 
@@ -30,7 +30,7 @@ from tweaks import parse_fasta
 def filter_short_alignments(fasta: Path,
                             min_length: int):
     """
-    Filter out sequences with less than N aligned characters from multiple sequence alignment
+    Filter out sequences with less than N aligned characters from a multiple sequence alignment
     :param fasta: path to a fasta file with MSA
     :param min_length: minimum length of an aligned sequence to keep
     """

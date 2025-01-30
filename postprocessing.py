@@ -28,7 +28,7 @@ def plot_intron_distribution(sequence_annotations: AnnotationBase,
     """
     Plot how many introns are in genes aligned to each HMM
     :param sequence_annotations: AnnotationBase with genes and nested introns
-    :param id2name_dict: dictionary with id as key and name as value
+    :param id2name_dict: dictionary with id as the key and name as the value
     """
     to_count = []
     for seq_id, annotations in sequence_annotations.items():
@@ -51,7 +51,7 @@ def plot_intron_lengths(sequence_annotations: AnnotationBase,
     """
     Generate a plot of intron length distributions for each homing nuclease (or no homing nuclease)
     :param sequence_annotations: AnnotationBase with genes and nested introns
-    :param id2name_dict: dictionary with id as key and name as value
+    :param id2name_dict: dictionary with id as the key and name as the value
     """
     genehmm2intronlengths = []
     for seq_id, annotations in sequence_annotations.items():
@@ -91,7 +91,7 @@ def introns_in_genomes(sequence_annotations: AnnotationBase,
     """
     Create a table of intron counts in each taxon
     :param sequence_annotations: AnnotationBase with genes and nested introns
-    :param id2name_dict: dictionary with id as key and name as value`
+    :param id2name_dict: dictionary with id as the key and name as the value
     :return: pandas DataFrame with intron counts and names
     """
 
