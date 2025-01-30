@@ -88,7 +88,7 @@ def annotate_introns(fasta: Path,
     It uses Infernal to detect RNA families and HMMer3 to detect protein domains and
     combines the results into a single gff file and annotation files compatible with r2dt (one per sequence).
 
-    Usage example: reannotate_introns.py -f GIISSD_and_Bastille.fasta -o Annotated_GIISSD_and_Bastille (add -u for unaligned sequees)
+    Usage example: reannotate_introns.py -f GIISSD_and_Bastille.fasta -o Annotated_GIISSD_and_Bastille (add '-u' for unaligned sequees)
     """
     # set up tmp intermediate directory and logger
 
