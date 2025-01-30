@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-The script calculates basic statistics for sequence alignment guided by a reference sequence/model.
+The script calculates the basic statistics for sequence alignment guided by a reference sequence/model.
 It was used to analyze the alignment of group I introns in the Bastille paper and generate supplementary tables.
-Most function follow the naming convention used in the paper (intron names beggin with "IA1__", "ID2__" etc.).
+Most functions follow the naming convention used in the paper (intron names beggin with "IA1__", "ID2__" etc.).
 """
 
 __author__ = "Jakub Barylski"
@@ -74,9 +74,8 @@ def alignment_stats(fasta: Path,
 
             ingroup_similarity, intergroup_similarity = group_similarity(matrix)
             ingroup_similarity.sort_index(inplace=True), intergroup_similarity.sort_index(inplace=True)
-            ingroup_similarity.to_excel(writer, sheet_name="in-group similarity")
+            ingroup_similarity.to_excel(writer, sheet_name="ingroup similarity")
             intergroup_similarity.to_excel(writer, sheet_name="intergroup similarity")
-
 
 def minor_group(s: str) -> str:
     """
@@ -89,7 +88,6 @@ def minor_group(s: str) -> str:
         return minor_t + '?'
     return minor_t
 
-
 def major_group(s: str) -> str:
     """
     Extracts the major subgroup (IA, IB etc.) group of the intron from its ID string
@@ -100,7 +98,6 @@ def major_group(s: str) -> str:
     # remove any numbers at the end of the string
     major_t = ''.join([i for i in mint if not i.isdigit() and i != '?'])
     return major_t + "_total"
-
 
 symbols = {'nucleic': set("ACGTUN"),
            'gap': "-"}  # DNA/RNA alphabet used in the alignment
@@ -154,7 +151,7 @@ def pairwise_identity(s1: str,
     Calculates the identity between two sequences without gaps
     :param s1: first sequence
     :param s2: second sequence
-    :param free_end_gaps: if True, end gaps are trimmed before the calculation otherwise they are treated as mismatches
+    :param free_end_gaps: if True end gaps are trimmed before the calculation otherwise they are treated as mismatches
                           (default: False - applies penalty for end gaps)
     :return: identity between the sequences
     """
@@ -188,11 +185,10 @@ def identity_matrix(msa: list[SeqIO.SeqRecord]) -> pd.DataFrame:
 
     return matrix
 
-
 def _row_identity(s1, msa: list[SeqIO.SeqRecord]):
     """
     Calculate the row of identity matrix (identities to a single sequence)
-    :param s1: SeqRecord to calculate identities for
+    :param s1: SeqRecord to calculate identities 
     :param msa: SeqIO-parsed alignment (list of SeqRecords)
     :return: list of identity values for the sequence
     """
@@ -214,7 +210,6 @@ def count_intron_groups_in_file(msa: list[SeqIO.SeqRecord]) -> pd.DataFrame:
     for group, count in all_groups.items():
         intron_group_counts.loc[group] = count
     return intron_group_counts
-
 
 def intron_aligned_lengths(msa: list[SeqIO.SeqRecord],
                            reference_len: int = None) -> pd.DataFrame:
@@ -245,7 +240,6 @@ def intron_aligned_lengths(msa: list[SeqIO.SeqRecord],
         stats.loc[intron_group] = [minim, maxim, mean, median, std]
 
     return stats
-
 
 def group_similarity(matrix) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
