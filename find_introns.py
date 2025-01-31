@@ -130,8 +130,6 @@ def find_introns(fasta: Path,
         logger.info(f'{k}: {v}')
     logger.opt(raw=True).debug("\n")
 
-    out.mkdir(parents=True)
-
     if cmtblout:
         infernal_tblout = cmtblout
     else:
