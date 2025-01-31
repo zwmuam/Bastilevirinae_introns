@@ -62,7 +62,7 @@ To align all analysed introns to the reference model from RFAM:
 ```
 ./cmalign -o cmalign_output.sto --matchonly --outformat Stockholm reference.cm non_redundant_seqences.fasta
 ```
-We used [InfeRNAl](http://eddylab.org/infernal) cmalign with "--matchonly" option and RF00028 model to exclude variable insertion sequences and focus on conserved RNA structures. In case of our machine we also added "--mxsize 5140" "--cpu 20" parameters to increase the maximum matrix size as well as number of threads and improve the performance. Some tools (e.g. tree construction programs) may also require DNA-like output format triggered by "--dnaout" option.
+We used [InfeRNAl](http://eddylab.org/infernal) cmalign with "--matchonly" option and RF00028 model to exclude variable insertion sequences and focus on conserved RNA structures. In case of our machine we also added "--mxsize 5140" "--cpu 20" parameters to increase the maximum matrix size as well as number of threads and improve the performance. Some tools (e.g. tree construction programs) may also require DNA-like output triggered by "--dnaout" option.
 
 
 Convert stockholm ouput of cmalign to aligned fasta:
