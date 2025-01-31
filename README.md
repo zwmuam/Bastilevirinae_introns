@@ -79,7 +79,7 @@ Columns with more than 50% gaps can be masked using one of commonly used sequenc
 
 To re-annotate introns (useful for intron sequences imported from external databases like GISSD) and generate R2DT-compatible annotations use:
 ```
-./reannotate_introns.py -f redundant_sequences.fasta -o Annotated_redundant_sequences
+./reannotate_introns.py -f non_redundant_seqences.fasta -o Annotated_nr_sequences
 ```
 
 
