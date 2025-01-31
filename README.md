@@ -94,7 +94,7 @@ Generate statistics for all sequence datasets and alignments:
 
 Construct a phylogenetic tree:
 ```
-iqtree -nt AUTO -s Unique_vs_RF00028.pruned.fasta -alrt 1000 -bb 1000
+iqtree -nt AUTO -s cmalign_output.pruned.fasta -alrt 1000 -bb 1000
 ```
 This command uses [IQ-tree](http://www.iqtree.org) with automatic model selection, 1000 ultrafast bootstrap replicates and 1000 SH-aLRT replicates.
 
