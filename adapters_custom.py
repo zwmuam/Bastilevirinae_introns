@@ -15,11 +15,10 @@ This file is part of Porechop. Porechop is free software: you can redistribute i
 it under the terms of the GNU General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version. Porechop is distributed in
 the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 details. You should have received a copy of the GNU General Public License along with Porechop. If
 not, see <http://www.gnu.org/licenses/>.
 """
-import copy
 from pathlib import Path
 
 
@@ -72,7 +71,8 @@ class Adapter(object):
             # Split the file on '>' and remove the first element, which is empty
             sequences = handle.read().split('>')[1:]
             # ensure that the file contains 1 or 2 sequences
-            assert len(sequences) in {1, 2}, f'Adapter fasta file must contain 1 or 2 (start and end) sequences ({fasta_file.stem} contains {len(sequences)}'
+            assert len(sequences) in {1,
+                                      2}, f'Adapter fasta file must contain 1 or 2 (start and end) sequences ({fasta_file.stem} contains {len(sequences)}'
             adapters = []
             for s in sequences:
                 name, sequence = s.split('\n', 1)
@@ -89,8 +89,6 @@ class Adapter(object):
                               end_sequence=(adapters[1][0], adapters[1][1]))
             adapter.name = f'{prefix}{adapter.name}{suffix}'
         return adapter
-
-
 
 
 # INSTRUCTIONS FOR ADDING CUSTOM ADAPTERS

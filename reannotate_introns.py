@@ -19,8 +19,8 @@ import click
 import numpy as np
 import pandas as pd
 from Bio import SeqIO, SeqRecord
-from annotations import AnnotationBase, AnnotationTrack, DnaAlignment, InfernalAlignment
 
+from annotations import AnnotationBase, AnnotationTrack, DnaAlignment, InfernalAlignment
 from tweaks import run_external, logger, log_format, default_threads
 
 
@@ -93,7 +93,7 @@ def annotate_introns(fasta: Path,
     # set up tmp intermediate directory and logger
 
     tmp_dir = out.joinpath(f'annotation_tmp')
-    # tmp_dir.mkdir(parents=True)
+    tmp_dir.mkdir(parents=True)
 
     logger.add(tmp_dir.joinpath('annotation.log').as_posix(), format=log_format)
     logger.info(f'Started with the following parameters:')
@@ -149,6 +149,7 @@ def annotate_introns(fasta: Path,
             final_annotation.annotate(alignment)
 
     r2dt_dir = out.joinpath('r2dt')
+    r2dt_dir.mkdir(parents=True)
     for seq_id, seq, seq_annotations in final_annotation.with_sequences(fasta):
         seq_annotations = final_annotation[seq_id]
         r2td = r2dt_annotation(seq_annotations, seq)

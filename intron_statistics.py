@@ -65,13 +65,15 @@ def plot_intron_lengths(sequence_annotations: AnnotationBase,
                         hmm_string = ', '.join(inner_hmms)
                         logger.warning(f'Intron {intron} contain multiple inner genes: {hmm_string}')
                     else:
-                        logger.warning(f'Intron {intron} contain multiple inner ORFs from the same family: {inner_hmms} '
-                                       f'this may be gene duplication, missassembly, frameshift or a broken gene')
+                        logger.warning(
+                            f'Intron {intron} contain multiple inner ORFs from the same family: {inner_hmms} '
+                            f'this may be gene duplication, missassembly, frameshift or a broken gene')
                         hmm_string, = set(inner_hmms)
                 else:
                     hmm_string, = inner_hmms
                 intron_length = len(intron)
-                genehmm2intronlengths.append({'HMM': hmm_string, 'Intron Length': intron_length, 'CDS Length': total_cds_length})
+                genehmm2intronlengths.append(
+                    {'HMM': hmm_string, 'Intron Length': intron_length, 'CDS Length': total_cds_length})
     plot_df = pd.DataFrame.from_records(genehmm2intronlengths)
 
     # calculate the Pearson correlation coefficient between intron and CDS lengths
@@ -164,7 +166,8 @@ def intron_architectures(gene_annotations: AnnotationBase,
                 outer_hmm = gene.model_definition()
                 if architecture_symbol not in architectures:
                     architectures[architecture_symbol] = {'5 CM': ', '.join([cm.model_name for cm in border_cm_5]),
-                                                          'internal elements': ', '.join([e.model_definition() for e in intron.nested]),
+                                                          'internal elements': ', '.join(
+                                                              [e.model_definition() for e in intron.nested]),
                                                           '3 CM': ', '.join([cm.model_name for cm in border_cm_3]),
                                                           'genes': {outer_hmm: [seq_id]},
                                                           'count': 1}
@@ -179,7 +182,8 @@ def intron_architectures(gene_annotations: AnnotationBase,
         occurrence_strings = []
         for gene, genomes in architecture['genes'].items():
             genome_count = Counter(genomes).most_common()
-            named_count = [f'{phage_name_dict[genome]} ({count} introns)' if count > 1 else f'{phage_name_dict[genome]}' for genome, count in genome_count]
+            named_count = [f'{phage_name_dict[genome]} ({count} introns)' if count > 1 else f'{phage_name_dict[genome]}'
+                           for genome, count in genome_count]
             genome_string = '; '.join(named_count)
             occurrence_strings.append(f'{gene}: {genome_string}')
         architecture['genes'] = '\n'.join(occurrence_strings)
@@ -247,10 +251,12 @@ def taxonomic_annotations(genome_intron_table: pd.DataFrame,
     intron_free_genera = []
     for genus, count in total_genome_count:
         if genus in genome_count:
-            records.append({'genus': genus, 'invaded genomes': f'{genome_count[genus]} / {count}', 'invaded genes': gene_count[genus], 'introns': intron_count[genus]})
+            records.append({'genus': genus, 'invaded genomes': f'{genome_count[genus]} / {count}',
+                            'invaded genes': gene_count[genus], 'introns': intron_count[genus]})
         else:
             intron_free_genera.append(f'{genus} ({count} genomes)')
     summary_table = pd.DataFrame.from_records(records, index='genus')
     logger.info(f'No introns found in:\t{intron_free_genera}')
-    genome_intron_table = genome_intron_table[['organism', 'species', 'genus', 'n_genes', 'n_introns', 'gene_names', 'hnh_names']]
+    genome_intron_table = genome_intron_table[
+        ['organism', 'species', 'genus', 'n_genes', 'n_introns', 'gene_names', 'hnh_names']]
     return genome_intron_table, summary_table

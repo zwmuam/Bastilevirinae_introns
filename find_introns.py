@@ -16,6 +16,7 @@ from typing import Dict, Tuple
 import click
 import pandas as pd
 from Bio import SeqIO, SeqRecord
+
 from annotations import Annotation, Gene, HmmerAlignment, AnnotationBase, Intron
 from intron_statistics import (plot_intron_distribution, plot_intron_lengths, introns_in_genomes,
                                taxonomic_annotations, intron_architectures, nuclease_table)
@@ -91,10 +92,10 @@ from tweaks import run_external, logger, log_format, default_threads
               type=click.Path(exists=True, path_type=Path),
               help='table with taxonomic annotations')
 @click.option("-b", "--borders",
-                required=False,
-                default=15,
-                type=int,
-                help='flanking regions upstream and downstream of the intron exported in the intron fna file')
+              required=False,
+              default=15,
+              type=int,
+              help='flanking regions upstream and downstream of the intron exported in the intron fna file')
 def find_introns(fasta: Path,
                  cms: Path,
                  mincmscore: int,
@@ -129,7 +130,7 @@ def find_introns(fasta: Path,
         logger.info(f'{k}: {v}')
     logger.opt(raw=True).debug("\n")
 
-    out.mkdir(parents=True, exist_ok=True)  # todo remove exist_ok
+    out.mkdir(parents=True)
 
     if cmtblout:
         infernal_tblout = cmtblout
@@ -141,8 +142,7 @@ def find_introns(fasta: Path,
                             '--noali', '--anytrunc',
                             '--cpu', threads,
                             cms, fasta]
-        if not infernal_tblout.exists():  # todo remove
-            run_external(infernal_command)
+        run_external(infernal_command)
 
     infernal_alignments = AnnotationBase.from_infernal(infernal_tblout, program=cmtool)
     infernal_alignments = infernal_alignments.filter_score(threshold=mincmscore)
@@ -168,8 +168,8 @@ def find_introns(fasta: Path,
                          '--noali',
                          '--cpu', threads,
                          hmm, forward_faa.as_posix()]
-        if not master_domtblout.exists():  # todo remove
-            run_external(hmmer_command, stdout='supress')
+
+        run_external(hmmer_command, stdout='supress')
         hmm_alignments = AnnotationBase.from_hmmer(master_domtblout)
 
     hmm_alignments = hmm_alignments.filter_score(threshold=minhmmscore)
@@ -273,4 +273,3 @@ def resolve_gene_structure(hmm_alignments: AnnotationBase,
 
 if __name__ == '__main__':
     find_introns()
-

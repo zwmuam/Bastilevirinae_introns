@@ -30,10 +30,11 @@ from collections import defaultdict
 from multiprocessing.dummy import Pool as ThreadPool
 from pathlib import Path
 
-from adapters_custom import (Adapter, ADAPTERS, make_full_native_barcode_adapter,
-                             make_old_full_rapid_barcode_adapter, make_new_full_rapid_barcode_adapter)
 from porechop.misc import load_fasta_or_fastq, print_table, red, bold_underline, int_to_str
 from porechop.nanopore_read import NanoporeRead
+
+from adapters_custom import (Adapter, ADAPTERS, make_full_native_barcode_adapter,
+                             make_old_full_rapid_barcode_adapter, make_new_full_rapid_barcode_adapter)
 
 
 def main(input: Path,
@@ -73,14 +74,16 @@ def main(input: Path,
 
     if custom_adapters:
         # add affapteres for every file in the custom adapters directory
-        custom_adapters = [Adapter.from_fasta(r) for r in custom_adapters.iterdir() if r.suffix in {'.fasta', '.fa', '.fna'}]
+        custom_adapters = [Adapter.from_fasta(r) for r in custom_adapters.iterdir() if
+                           r.suffix in {'.fasta', '.fa', '.fna'}]
         selected_adapters = selected_adapters + custom_adapters
 
     if custom_barcodes:
         # remove the default barcodes to avoid conflicts
         selected_adapters = [a for a in selected_adapters if not a.name.startswith('Barcode ')]
         custom_barcodes = Path(custom_barcodes)
-        custom_barcodes = [Adapter.from_fasta(f, prefix='Barcode ', suffix=' (forward)') for f in custom_barcodes.iterdir() if f.suffix in {'.fasta', '.fa', '.fna'}]
+        custom_barcodes = [Adapter.from_fasta(f, prefix='Barcode ', suffix=' (forward)') for f in
+                           custom_barcodes.iterdir() if f.suffix in {'.fasta', '.fa', '.fna'}]
         # custom_barcodes.extend([a.reverse() for a in custom_barcodes])
         selected_adapters = selected_adapters + custom_barcodes
         # add affapteres for every file in the custom barcodes directory

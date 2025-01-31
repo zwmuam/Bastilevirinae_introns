@@ -47,48 +47,48 @@ Locate initial group I and group II matches:
 ```
 ./find_introns.py -f genomes.fasta -o genomes_intron_pred
 ```
-This command assumes that default databases are installed. Custom HMMs and CMs can be used using "-h" and "-c" arguments.
-Optionally, xlsx table with taxonomy can be addes as "-w" argument to perform distribution analysis.
+This command assumes that default databases are installed. Custom HMMs and CMs can be used "-h" and "-c" arguments.
+Optionally, xlsx table with taxonomy can be added as "-w" argument to perform distribution analysis.
 
 
 If you have spliced cDNA reads (see the paper) pass them to "confirm_introns" script to map transcripts to genome and identify splicing sites:
 ```
-./confirm_introns.py -ca adapter_promoter -cb barcodes_r -fq 100k_sample.fastq -rd rnaseq_references -o confirm_introns_test -s '__' -mr 1000
+./confirm_introns.py -ca custom_adapters -cb custom_barcodes -fq reads.fastq -rd reference_genomes_dir -o output_dir -s '__' -mr 1000
 ```
-The script uses mofified porchop to demultiplex reads and remove adapters. Clean reads are mapped to reference genomes with minimap2 and analysed by spliced_bam2gff to find splicing sites. The "-s" argument is used to specify the separator between the barcode and the read name in the fastq file. The "-mr" specifies the number of reads in bam files used for downstream visualiation
+The script uses modified [Porechop](https://github.com/rrwick/Porechop) to demultiplex reads and remove adapters. Clean reads are mapped to reference genomes with minimap2 and analysed by spliced_bam2gff to find splicing sites. The "-s" argument is used to specify the separator between the barcode and the read name in the fastq file. The "-mr" specifies the number of reads in bam files used for downstream visualiation
 
 
-To align all analysed introns to the referenc group I model from RFAM:
+To align all analysed introns to the reference model from RFAM:
 ```
-./cmalign -o Unique_vs_RF00028.sto --dnaout --mxsize 5140 --cpu 20 --matchonly --outformat Stockholm RF00028.cm GIISSD_and_Bastille.unique_099.fasta
+./cmalign -o cmalign_output.sto --matchonly --outformat Stockholm reference.cm non_redundant_seqences.fasta
 ```
-We used InfeRNAl cmalign with "--matchonly" option to exclude variable insertion sequences and focus on conserved RNA structures.
+We used [InfeRNAl](http://eddylab.org/infernal) cmalign with "--matchonly" option and RF00028 model to exclude variable insertion sequences and focus on conserved RNA structures. The in case of our machine we also added "--mxsize 5140" "--cpu 20" parameters to increase the maximum matrix size as well as number of threads and improve the performance. Some tools (e.g. tree construction programs) may also require DNA-like output format triggered by "--dnaout" option.
 
 
 Convert stockholm ouput of cmalign to aligned fasta:
 ```
-./sto2fasta.py -s Unique_vs_RF00028.sto
+./sto2fasta.py -s cmalign_output.sto
 ```
 
 
 Columns with more than 50% gaps can be masked using one of commonly used sequence analysis software suites. To prune poorly aligned sequences run:
 ```
-./prune_alignment.py -f Unique_vs_RF00028.fasta -l 50
+./prune_alignment.py -f cmalign_output.fasta -l 50
 ```
 
 
 To re-annotate introns (useful for intron sequences imported from external databases like GISSD) and generate R2DT-compatible annotations use:
 ```
-./reannotate_introns.py -f GIISSD_and_Bastille_introns.fasta -o Annotated_GIISSD_and_Bastille_introns
+./reannotate_introns.py -f redundant_sequences.fasta -o Annotated_redundant_sequences
 ```
 
 
 Generate statistics for all sequence datasets and alignments:
 ```
-./alignment_statistics.py -u -f GIISSD_and_Bastille.fasta -o redundant_dataset_stats.xlsx
-./alignment_statistics.py -u -f GIISSD_and_Bastille.unique_099.fasta -o nr_dataset_stats.xlsx
-./alignment_statistics.py -f Unique_vs_RF00028.fasta -r 251 -o unpruned_aln_stats.xlsx
-./alignment_statistics.py -f Unique_vs_RF00028.pruned.fasta -r 251 -o pruned_aln_stats.xlsx
+./alignment_statistics.py -u -f redundant_sequences.fasta -o redundant_dataset_stats.xlsx
+./alignment_statistics.py -u -f non_redundant_seqences.fasta -o nr_dataset_stats.xlsx
+./alignment_statistics.py -f cmalign_output.fasta -r 251 -o unpruned_aln_stats.xlsx
+./alignment_statistics.py -f cmalign_output.pruned.fasta -r 251 -o pruned_aln_stats.xlsx
 ```
 
 
@@ -96,14 +96,15 @@ Construct a phylogenetic tree:
 ```
 iqtree -nt AUTO -s Unique_vs_RF00028.pruned.fasta -alrt 1000 -bb 1000
 ```
-This command uses IQ-tree with automatic model selection, 1000 ultrafast bootstrap replicates and 1000 SH-aLRT replicates.
+This command uses [IQ-tree](http://www.iqtree.org) with automatic model selection, 1000 ultrafast bootstrap replicates and 1000 SH-aLRT replicates.
 
 
-Predict the secondary structure of introns:
+Predict the secondary structure of introns from different clades observed in the phylogenetic tree:
 ```
-linearturbofold -i clade_8.fna -o clade_8_ltf  -v --pf --bpp
+for clade in clade_*.fna; do ./linearturbofold -i ${clade} -o ${clade}_ltf --pf -v --bpp; done
 ```
-LinearTurboFold is run to XXX clades sim align
+[LinearTurboFold](https://github.com/LinearFold/LinearTurboFold) is run to simultaneously align and fold the sequences from each clade ("-v" prints alignment, folding and runtime information, --pf saves partition function and "--bpp" writes base pair probabilities).
+This step is not included in the environment. To get the software, please visit the original repository by Li and colleagues.
 
 
 Use structures, tsv annotations and json colour code (provided by reannotate_introns.py) to generate structure visualisations using R2DT:
@@ -113,5 +114,5 @@ r2dt.py templatefree ${intron_structure}.fasta ${intron_structure}
 python3 enrich_json.py --input-json ${intron_structure}.json --input-data ${intron_structure}.annot --output ${intron_structure}.enriched.json
 json2svg.py -p colour_dict.json -i ${intron_structure}.enriched.json -o ${intron_structure}.enriched.svg
 ```
-The visualisation is not included in the repository because it requires a fully configured R2DT pipeline.
-Run it within the R2DT Docker container based on the image provided at https://hub.docker.com/r/rnacentral/r2dt.
+The visualisation is not included in the repository because it requires a fully configured [R2DT pipeline](https://docs.r2dt.bio/en/latest/about.html).
+Run it within the R2DT Docker container based on the [image from Docker Hub](https://hub.docker.com/r/rnacentral/r2dt).

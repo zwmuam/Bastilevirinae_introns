@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-todo: add docstring
+Postprocessing functions for intron finding and annotation scripts.
+Used to generate plots and tables summarizing the results of intron annotation.
 """
 
 __author__ = "Jakub Barylski"
@@ -57,14 +58,16 @@ def plot_intron_lengths(sequence_annotations: AnnotationBase,
     for seq_id, annotations in sequence_annotations.items():
         for gene in annotations:
             for intron in gene.children(Intron):
-                inner_hmms = [cds.model_definition() for cds in intron.children(DnaAlignment)] if intron.children(DnaAlignment) else ['No_CDS']
+                inner_hmms = [cds.model_definition() for cds in intron.children(DnaAlignment)] if intron.children(
+                    DnaAlignment) else ['No_CDS']
                 if len(inner_hmms) > 1:
                     if len(set(inner_hmms)) > 1:
                         hmm_string = ', '.join(inner_hmms)
                         logger.warning(f'Intron {intron} contain multiple inner genes: {hmm_string}')
                     else:
-                        logger.warning(f'Intron {intron} contain multiple inner ORFs from the same family: {inner_hmms} '
-                                       f'this may be gene duplication, missassembly, frameshift or a broken gene')
+                        logger.warning(
+                            f'Intron {intron} contain multiple inner ORFs from the same family: {inner_hmms} '
+                            f'this may be gene duplication, missassembly, frameshift or a broken gene')
                         hmm_string, = set(inner_hmms)
                 else:
                     hmm_string, = inner_hmms
@@ -163,7 +166,8 @@ def intron_architectures(gene_annotations: AnnotationBase,
                 outer_hmm = gene.model_definition()
                 if architecture_symbol not in architectures:
                     architectures[architecture_symbol] = {'5 CM': ', '.join([cm.model_name for cm in border_cm_5]),
-                                                          'internal elements': ', '.join([e.model_definition() for e in intron.nested]),
+                                                          'internal elements': ', '.join(
+                                                              [e.model_definition() for e in intron.nested]),
                                                           '3 CM': ', '.join([cm.model_name for cm in border_cm_3]),
                                                           'genes': {outer_hmm: [seq_id]},
                                                           'count': 1}
@@ -178,7 +182,8 @@ def intron_architectures(gene_annotations: AnnotationBase,
         occurrence_strings = []
         for gene, genomes in architecture['genes'].items():
             genome_count = Counter(genomes).most_common()
-            named_count = [f'{phage_name_dict[genome]} ({count} introns)' if count > 1 else f'{phage_name_dict[genome]}' for genome, count in genome_count]
+            named_count = [f'{phage_name_dict[genome]} ({count} introns)' if count > 1 else f'{phage_name_dict[genome]}'
+                           for genome, count in genome_count]
             genome_string = '; '.join(named_count)
             occurrence_strings.append(f'{gene}: {genome_string}')
         architecture['genes'] = '\n'.join(occurrence_strings)
@@ -214,8 +219,6 @@ def homing_nuclease_table(gene_annotations: AnnotationBase,
                         nucleases[cds.model_id]['count'] += 1
 
 
-
-
 def taxonomic_annotations(genome_intron_table: pd.DataFrame,
                           taxon_table: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -238,5 +241,6 @@ def taxonomic_annotations(genome_intron_table: pd.DataFrame,
             intron_free_genera.append(f'{genus} ({count} genomes)')
     summary_table = pd.DataFrame.from_records(records, index='genus')
     logger.info(f'No introns found in:\t{intron_free_genera}')
-    genome_intron_table = genome_intron_table[['organism', 'species', 'genus', 'n_genes', 'n_introns', 'gene_names', 'hnh_names']]
+    genome_intron_table = genome_intron_table[
+        ['organism', 'species', 'genus', 'n_genes', 'n_introns', 'gene_names', 'hnh_names']]
     return genome_intron_table, summary_table

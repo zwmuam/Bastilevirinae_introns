@@ -75,6 +75,7 @@ def alignment_stats(fasta: Path,
             ingroup_similarity.to_excel(writer, sheet_name="ingroup similarity")
             intergroup_similarity.to_excel(writer, sheet_name="intergroup similarity")
 
+
 def minor_group(s: str) -> str:
     """
     Extracts the minor subgroup (IA1, IB2 etc.) group of the intron from its ID string
@@ -86,6 +87,7 @@ def minor_group(s: str) -> str:
         return minor_t + '?'
     return minor_t
 
+
 def major_group(s: str) -> str:
     """
     Extracts the major subgroup (IA, IB etc.) group of the intron from its ID string
@@ -96,6 +98,7 @@ def major_group(s: str) -> str:
     # remove any numbers at the end of the string
     major_t = ''.join([i for i in mint if not i.isdigit() and i != '?'])
     return major_t + "_total"
+
 
 symbols = {'nucleic': set("ACGTUN"),
            'gap': "-"}  # DNA/RNA alphabet used in the alignment
@@ -183,6 +186,7 @@ def identity_matrix(msa: list[SeqIO.SeqRecord]) -> pd.DataFrame:
 
     return matrix
 
+
 def _row_identity(s1, msa: list[SeqIO.SeqRecord]):
     """
     Calculate the row of identity matrix (identities to a single sequence)
@@ -208,6 +212,7 @@ def count_intron_groups_in_file(msa: list[SeqIO.SeqRecord]) -> pd.DataFrame:
     for group, count in all_groups.items():
         intron_group_counts.loc[group] = count
     return intron_group_counts
+
 
 def intron_aligned_lengths(msa: list[SeqIO.SeqRecord],
                            reference_len: int = None) -> pd.DataFrame:
@@ -238,6 +243,7 @@ def intron_aligned_lengths(msa: list[SeqIO.SeqRecord],
         stats.loc[intron_group] = [minim, maxim, mean, median, std]
 
     return stats
+
 
 def group_similarity(matrix) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -289,4 +295,3 @@ def group_similarity(matrix) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 if __name__ == "__main__":
     alignment_stats()
-  

@@ -11,7 +11,6 @@ import pickle
 import sys
 import warnings
 from functools import wraps
-from itertools import chain
 from multiprocessing import cpu_count
 from pathlib import Path
 from subprocess import run, DEVNULL
@@ -47,7 +46,6 @@ for form in extensions:  # add gzip compressed files
     extensions[form].update([f'{e}.gz' for e in extensions[form]])
 
 
-
 def frantic_search(dictionary: Dict[Hashable, Any],
                    *possible_keys: Hashable):
     """
@@ -61,6 +59,7 @@ def frantic_search(dictionary: Dict[Hashable, Any],
             return dictionary[key]
     missed_keys = ', '.join([str(k) for k in possible_keys])
     raise KeyError(f'Found none of the: {missed_keys}')
+
 
 def find_files(directory: Path,
                file_type: str,

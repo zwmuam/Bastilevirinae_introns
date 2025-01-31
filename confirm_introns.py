@@ -14,8 +14,8 @@ from pathlib import Path
 from random import randint
 
 import click
-import porechop_custom
 
+import porechop_custom
 from annotations import Exon, Intron, Gene, AnnotationBase
 from tweaks import run_external
 
@@ -77,7 +77,7 @@ def rnaseq_analysis(custom_adapters: Path,
     """
     De-multiplex reads and map them to respective references
     
-    Usage example: ./confirm_introns.py -ca custom_adapters -cb custom_barcodes -fq reads.fastq -rd reference_genomes_dir -o outpu_dir -s '__' -mr 1000
+    Usage example: ./confirm_introns.py -ca custom_adapters -cb custom_barcodes -fq reads.fastq -rd reference_genomes_dir -o output_dir -s '__' -mr 1000
     """
     assert read_fastq or clean_reads, 'Provide either fastq to trim or clean_reads'
     output.mkdir()
@@ -131,6 +131,7 @@ def rnaseq_analysis(custom_adapters: Path,
             print(f"Reference {reference_name} not found")
     filtered_introns.save_gff(output.joinpath('Introns.gff'))
 
+
 def trim_and_demultiplex(read_fastq: Path,
                          custom_adapters: Path,
                          custom_barcodes: Path,
@@ -171,6 +172,7 @@ def trim_and_demultiplex(read_fastq: Path,
             handle.write(filtlong_output.decode())
             output_files.append(filtered_fastq)
     return output_files
+
 
 def map_to_reference(reference: Path,
                      read_fastq: Path,
@@ -284,7 +286,8 @@ def subsample_bam(bam: Path,
     assert max_reads < mapped_reads, f'Cannot subsample {max_reads} out of {mapped_reads} reads'
 
     fraction_to_keep = max_reads / mapped_reads
-    subsample_command = ['samtools', 'view', '--subsample', fraction_to_keep, '--subsample-seed', randint(0, 100000), '-b', '-o', subsampled_bam, bam]
+    subsample_command = ['samtools', 'view', '--subsample', fraction_to_keep, '--subsample-seed', randint(0, 100000),
+                         '-b', '-o', subsampled_bam, bam]
     run_external(subsample_command)
     index_command = ['samtools', 'index', '-o', subsampled_bam.with_suffix('.bai'), subsampled_bam]
     run_external(index_command)
@@ -293,4 +296,3 @@ def subsample_bam(bam: Path,
 
 if __name__ == '__main__':
     rnaseq_analysis()
-  

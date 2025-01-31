@@ -17,7 +17,7 @@ from typing import Dict, List, Type, Union, Any
 
 from Bio import SeqIO, SeqFeature as Feature, Seq
 
-from tweaks import logger, extensions, parse_fasta, frantic_search
+from tweaks import logger, parse_fasta, frantic_search
 
 
 class Annotation:
@@ -274,8 +274,12 @@ class Annotation:
                          overlap_threshold: float = 0.5,
                          culled: bool = True):
         """
-        Include nested annotations that overlap with the current one
-        into 'self.nested' list TODO
+        Search the annotation track for overlapping annotations and
+        include them in the 'nested' list of this annotation
+        :param annotations: track with annotations to scan for overlaps
+        :param overlap_threshold: minimum fraction of overlap to treat the annotation as nested
+        :param culled: remove annotations that are engulfed by the other annotations after docking
+                       (leaves only a 'single layer' of nested annotations)
         """
         assert self.seq_id == annotations.seq_id, 'Cannot dock annotations from different sequences'
         overlapping = AnnotationTrack(self.seq_id, [a for a in annotations if self.overlaps(a) > overlap_threshold])
@@ -415,14 +419,14 @@ class HmmerAlignment(Annotation):
     """
 
     parser_dict = {'hmmsearch': {'seq_id': 0,
-                                 'model_name': 3,  # todo add actual names to db (2)
+                                 'model_name': 3,
                                  'model_id': 3,
                                  'seq_start': 17,
                                  'seq_end': 18,
                                  'evalue': 6,
                                  'ivalue': 12,
                                  'score': 13},
-                   'hmmscan': {'model_name': 0,  # todo add actual names to db (1)
+                   'hmmscan': {'model_name': 0,
                                'model_id': 0,
                                'seq_id': 3,
                                'seq_start': 17,
@@ -589,19 +593,19 @@ class Gene(Annotation):
 
     @classmethod
     def from_exons(cls,
-                   domains: List[PutativeExon],
-                   min_intron: int = 20): # TODO ->
+                   exons: List[PutativeExon],
+                   min_intron: int = 20) -> 'Gene':
         """
         Creates a gene object from a list of putative exons by sorting them
         based on the start position and adding introns (if needed).
-        :param domains: list of putative exons
+        :param exons: list of putative exons
         :param min_intron: minimum length of gap to be considered as intron
         :return: gene object with assigned exons and introns 
         """
-        xxx = [type(d) for d in domains] # TODO WTF?
-        assert all([isinstance(d, PutativeExon) for d in
-                    domains]), f'method can only use Exon or DnaAlignments annotations to create a gene {xxx}'
-        sorted_domains = list(sorted(domains, key=lambda d: d.start))
+        input_types = set([type(d) for d in exons])
+        assert all([isinstance(d, PutativeExon) for d in exons]), \
+            f'method can only use Exon or DnaAlignments annotations to create a gene {input_types}'
+        sorted_domains = list(sorted(exons, key=lambda d: d.start))
         first_domain, last_domain = sorted_domains[0], sorted_domains[-1]
 
         gene = Gene(seq_id=first_domain.seq_id,
@@ -642,7 +646,6 @@ class AnnotationTrack(list):
                  annotations: List[Annotation] = ()):
         list.__init__(self, annotations)
         self.seq_id = seq_id
-        self.method = 'user'  # TODO why the fuck is this here?
 
     def filter_score(self,
                      threshold: float,
@@ -695,11 +698,12 @@ class AnnotationTrack(list):
                          overlap_threshold: float = 0.5,
                          culled: bool = True):
         """
-        TODO
-        Include nested annotations that overlap with any of the annotations in the track
+        Search another annotation track for overlapping annotations and
+        dock them to annotations from this track
         :param annotations: annotation track containing annotations to check for overlaps 
         :param overlap_threshold: minimum overlap threshold to consider docking 
-        :param culled: whether the annotations were culled or not, default = True 
+        :param culled: remove annotations that are engulfed by the other annotations after docking
+                       (leaves only a 'single layer' of nested annotations)
         :return: modified annotations in place 
         """
         for a in self:
@@ -962,7 +966,7 @@ class AnnotationBase(dict):
         :param annotations: AnnotationBase containing annotations to check for overlaps
         :param overlap_threshold: minimum overlap threshold to dock annotation a nested
         :param culled: whether the annotations were culled or not, default = True
-        """                            
+        """
         for seq_id, track in self.items():
             if seq_id in annotations:
                 track.dock_overlapping(annotations[seq_id], overlap_threshold, culled)
