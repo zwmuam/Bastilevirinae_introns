@@ -103,7 +103,7 @@ Predict the secondary structure of introns from different clades observed in the
 ```
 for clade in clade_*.fna; do ./linearturbofold -i ${clade} -o ${clade}_ltf --pf -v --bpp; done
 ```
-[LinearTurboFold](https://github.com/LinearFold/LinearTurboFold) is run to simultaneously align and fold the sequences from each clade ("-v" prints alignment, folding and runtime information, --pf saves partition function and "--bpp" writes base pair probabilities).
+[LinearTurboFold](https://github.com/LinearFold/LinearTurboFold) is run to simultaneously align and fold the sequences from each clade ("-v" prints alignment, folding and runtime information, "--pf" saves partition function and "--bpp" writes base pair probabilities).
 This step is not included in the environment. To get the software, please visit the original repository by Li and colleagues.
 
 
