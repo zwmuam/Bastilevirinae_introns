@@ -55,7 +55,7 @@ If you have spliced cDNA reads (see the paper) pass them to "confirm_introns" sc
 ```
 ./confirm_introns.py -ca custom_adapters -cb custom_barcodes -fq reads.fastq -rd reference_genomes_dir -o output_dir -s '__' -mr 1000
 ```
-The script uses modified [Porechop](https://github.com/rrwick/Porechop) to demultiplex reads and remove adapters. Clean reads are mapped to reference genomes with minimap2 and analysed by spliced_bam2gff to find splicing sites. The "-s" argument is used to specify the separator between the barcode and the read name in the fastq file. The "-mr" specifies the number of reads in bam files used for downstream visualiation
+The script uses modified [Porechop](https://github.com/rrwick/Porechop) to demultiplex reads and remove adapters. Clean reads are mapped to reference genomes with minimap2 and analysed by spliced_bam2gff to find splicing sites. The "-s" argument is used to specify the separator between the barcode and the read name in the fastq file. The "-mr" specifies the number of reads in bam files used for downstream./alignment_statistics.py -u -f redundant_sequences.fasta -o redundant_dataset_stats.xlsx visualiation
 
 
 To align all analysed introns to the reference model from RFAM:
@@ -85,10 +85,10 @@ To re-annotate introns (useful for intron sequences imported from external datab
 
 Generate statistics for all sequence datasets and alignments:
 ```
-./alignment_statistics.py -u -f redundant_sequences.fasta -o redundant_dataset_stats.xlsx
-./alignment_statistics.py -u -f non_redundant_seqences.fasta -o nr_dataset_stats.xlsx
-./alignment_statistics.py -f cmalign_output.fasta -r 251 -o unpruned_aln_stats.xlsx
-./alignment_statistics.py -f cmalign_output.pruned.fasta -r 251 -o pruned_aln_stats.xlsx
+./alignment_statistics.py -u -f redundant_sequences.fasta
+./alignment_statistics.py -u -f non_redundant_seqences.fasta
+./alignment_statistics.py -f cmalign_output.fasta -r 251
+./alignment_statistics.py -f cmalign_output.pruned.fasta -r
 ```
 
 
