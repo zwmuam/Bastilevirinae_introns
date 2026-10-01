@@ -87,12 +87,15 @@ def find_files(directory: Path,
 
 
 # PARALLELIZATION
-class Parallel(joblib.Parallel):
+import mpire
+from mpire import WorkerPool
+
+
+class Parallel:
     """
-    The modification of joblib.Parallel
-    with a TQDM progress bar
-    according to Nth
-    (https://stackoverflow.com/questions/37804279/how-can-we-use-tqdm-in-a-parallel-execution-with-joblib)
+    Modern high-performance multiprocessing wrapper around MPIRE WorkerPool.
+    Optimized for multi-core Linux workstations, bioinformatic workflows,
+    complex Python/Biopython object graphs, dynamic chunking, and seed safety.
     """
 
     def __init__(self,
@@ -100,66 +103,55 @@ class Parallel(joblib.Parallel):
                  input_collection: Collection = None,
                  random_replicates: int = None,
                  kwargs: Dict = None,
-                 n_jobs=None,
-                 backend=None,
+                 n_jobs: int = None,
                  description: str = None,
-                 verbose=0,
-                 timeout=None,
-                 pre_dispatch='2 * n_jobs',
-                 batch_size='auto',
-                 temp_folder=None, max_nbytes='1M', mmap_mode='r',
-                 prefer=None,
-                 require=None,
-                 bar: bool = True):
+                 bar: bool = True,
+                 bar_color: str = 'cyan',
+                 chunk_size: Any = 'auto',
+                 shared_objects: Any = None,
+                 keep_order: bool = True,
+                 **extra_kwargs):
 
-        if not n_jobs:
-            n_jobs = default_threads
+        assert bool(random_replicates) ^ bool(input_collection is not None), \
+            'You need to specify EITHER an input collection OR number of random replicates'
 
-        joblib.Parallel.__init__(self,
-                                 n_jobs=n_jobs,
-                                 backend=backend,
-                                 verbose=verbose,
-                                 timeout=timeout,
-                                 pre_dispatch=pre_dispatch,
-                                 batch_size=batch_size,
-                                 temp_folder=temp_folder,
-                                 max_nbytes=max_nbytes,
-                                 mmap_mode=mmap_mode,
-                                 prefer=prefer,
-                                 require=require)
-
-        assert bool(random_replicates) ^ bool(input_collection), 'You need to specify EITHER an input collection ' \
-                                                                 'OR number of random replicates of the function'
-
+        n_jobs = n_jobs if n_jobs is not None else default_threads
         kwargs = {} if not kwargs else kwargs
-
         description = description if description else parallelized_function.__name__
 
+        # Handle random replicates vs input collection
         if random_replicates:
-            input_collection = np.random.randint(0, 2 ** 32 - 1,
-                                                 size=random_replicates,
-                                                 dtype=np.int64)
+            ss = np.random.SeedSequence()
+            child_seeds = ss.spawn(random_replicates)
+            input_collection = [int(s.generate_state(1)[0]) for s in child_seeds]
             description = f'{description} 🎲'
 
-        jobs = ((joblib.delayed(parallelized_function)(e, **kwargs)) for e in input_collection)
+        input_list = list(input_collection) if not isinstance(input_collection, list) else input_collection
+        total_items = len(input_list)
 
-        if bar:
-            self._progress = tqdm(total=len(input_collection), file=sys.stdout)
-            if description:
-                self._progress.set_description(description)
-        else:
-            self._progress = None
+        # Dynamic chunk size estimation for variable size bioinformatic processes
+        if chunk_size == 'auto':
+            if total_items > 0 and n_jobs > 0:
+                chunk_size = max(1, total_items // (n_jobs * 4))
+            else:
+                chunk_size = 1
 
-        self.result = list(self.__call__(jobs))
+        worker_kwargs = {'shared_objects': shared_objects} if shared_objects else {}
 
-        if self._progress:
-            self._progress.close()
-            print(flush=True)
+        def _worker_wrapper(item):
+            return parallelized_function(item, **kwargs)
+
+        with WorkerPool(n_jobs=n_jobs, **worker_kwargs) as pool:
+            pbar_opts = {'desc': description, 'colour': bar_color} if bar else {}
+            map_func = pool.map if keep_order else pool.map_unordered
+            self.result = map_func(_worker_wrapper,
+                                   input_list,
+                                   progress_bar=bar,
+                                   progress_bar_options=pbar_opts if bar else None,
+                                   chunk_size=chunk_size)
 
     def print_progress(self):
-        if self._progress:
-            self._progress.n = self.n_completed_tasks
-            self._progress.refresh()
+        pass
 
 
 def run_external(command: List[str],
