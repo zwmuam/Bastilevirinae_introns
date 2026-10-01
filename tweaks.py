@@ -179,11 +179,15 @@ def run_external(command: List[str],
         process = run(sanitized_command, stdout=DEVNULL, stderr=DEVNULL, input=stdin)
     elif stdout == 'capture':
         process = run(sanitized_command, capture_output=True, input=stdin)
+        if process.returncode != 0:
+            stderr_msg = process.stderr.decode() if process.stderr else ''
+            raise ChildProcessError(f'"{" ".join(sanitized_command)}" crashed with:\n{stderr_msg}')
         return process.stdout
     else:
         process = run(sanitized_command)
-    if process.returncode or process.stderr:
-        raise ChildProcessError(f'"{" ".join(sanitized_command)}" crashed with:\n{process.stderr}')
+    if process.returncode != 0:
+        stderr_msg = process.stderr.decode() if getattr(process, 'stderr', None) else ''
+        raise ChildProcessError(f'"{" ".join(sanitized_command)}" crashed with:\n{stderr_msg}')
 
 
 def parse_fasta(fasta: Path):
@@ -204,7 +208,8 @@ def parse_fasta(fasta: Path):
                 sequence = []
             else:
                 sequence.append(line)
-    yield identifier, ''.join(sequence)
+    if identifier is not None:
+        yield identifier, ''.join(sequence)
 
 
 def checkpoint(funct: callable):

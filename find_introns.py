@@ -15,7 +15,7 @@ from typing import Dict, Tuple
 
 import click
 import pandas as pd
-from Bio import SeqIO, SeqRecord
+from Bio import SeqIO, SeqRecord, Seq
 
 from annotations import Annotation, Gene, HmmerAlignment, AnnotationBase, Intron
 from intron_statistics import (plot_intron_distribution, plot_intron_lengths, introns_in_genomes,
@@ -64,7 +64,7 @@ from tweaks import run_external, logger, log_format, default_threads
               default=default_threads,
               type=int,
               help=f'number of CPU threads to use [default: {default_threads}]')
-@click.option("-t", "--cmtblout",
+@click.option("-m", "--cmtblout",
               required=False,
               type=click.Path(exists=True, path_type=Path),
               help='InfeRNAl tblout file with cmscan/cmsearch results (optional, skips infernal search)')
@@ -85,7 +85,7 @@ from tweaks import run_external, logger, log_format, default_threads
 @click.option("-r", "--phrog_table",
               required=False,
               default=Path(__file__).parent.joinpath('databases', 'phrog_annot_v4.tsv'),
-              type=click.Path(exists=True, path_type=Path),
+              type=click.Path(path_type=Path),
               help='table with PHROG annotations')
 @click.option("-w", "--taxon_table",
               required=False,
@@ -124,6 +124,7 @@ def find_introns(fasta: Path,
     Usage example: ./find_introns.py -f genomes.fasta -o genomes_intron_pred -w taxonomy.xlsx (optional)
     """
     # set up main log in the output directory
+    out.mkdir(parents=True, exist_ok=True)
     logger.add(out.joinpath('intron_analysis.log').as_posix(), format=log_format)
     logger.info(f'Started with the following parameters:')
     for k, v in locals().items():
@@ -167,15 +168,17 @@ def find_introns(fasta: Path,
                          '--cpu', threads,
                          hmm, forward_faa.as_posix()]
 
-        run_external(hmmer_command, stdout='supress')
+        run_external(hmmer_command, stdout='suppress')
         hmm_alignments = AnnotationBase.from_hmmer(master_domtblout)
 
     hmm_alignments = hmm_alignments.filter_score(threshold=minhmmscore)
-    if phrog_table:
+    if phrog_table and phrog_table.exists():
         phrog_df = pd.read_table(phrog_table, usecols=['phrog', 'annot'])
         phrog_df['phrog'] = phrog_df['phrog'].apply(lambda x: f'phrog_{x}')
         phrog_dict = dict(zip(phrog_df['phrog'], phrog_df['annot']))
         hmm_alignments.get_model_names(phrog_dict)
+    else:
+        phrog_dict = {}
 
     gene_structure = resolve_gene_structure(hmm_alignments,
                                             seq_lengths)
@@ -189,7 +192,7 @@ def find_introns(fasta: Path,
     introns_to_export.annotation_sequences(input_fasta=fasta,
                                            output_fasta=out.joinpath(f'intron_sequences_flank_{borders}.fna'))
 
-    if phrog_table:
+    if phrog_dict:
 
         distribution_plot = plot_intron_distribution(sequence_annotations=gene_structure,
                                                      id2name_dict=phrog_dict)
@@ -223,13 +226,14 @@ def translate_fna(in_fna: Path,
     :param out_faa: output fasta file with protein sequences
     :return: output fasta file with protein sequences and dictionary with DNA sequence lengths
     """
-    sequences = SeqIO.index(in_fna.as_posix(), 'fasta')
+    from tweaks import parse_fasta
     translations = []
     lengths = {}
-    for seq_id, seq in sequences.items():
+    for seq_id, seq in parse_fasta(in_fna):
         lengths[seq_id] = len(seq)
+        seq_rec = Seq.Seq(seq) if hasattr(Seq, 'Seq') else Seq(seq)
         for frame in range(1, 4):
-            ft = SeqRecord.SeqRecord(seq.seq[frame - 1:]).translate(table=11, to_stop=False, stop_symbol='*')
+            ft = SeqRecord.SeqRecord(seq_rec[frame - 1:].translate(table=11, to_stop=False, stop_symbol='*'))
             ft.id = f'{seq_id}___{frame}'
             translations.append(ft)
     SeqIO.write(translations, out_faa.as_posix(), 'fasta')
@@ -245,6 +249,8 @@ def resolve_gene_structure(hmm_alignments: AnnotationBase,
     :return: list of annotations representing detected genes exons and introns
     """
 
+    logger.info(f'dna_lengths keys: {list(dna_lengths.keys())}')
+    logger.info(f'hmm_alignments keys: {list(hmm_alignments.keys())}')
     alignments_in_dna = AnnotationBase()
     for translation_id, alignments in hmm_alignments.items():
         dna_length = dna_lengths[translation_id.split('___')[0]]

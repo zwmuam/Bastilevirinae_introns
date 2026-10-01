@@ -71,7 +71,7 @@ from tweaks import run_external, logger, log_format, default_threads
 @click.option("-r", "--phrog_table",
               required=False,
               default=Path(__file__).parent.joinpath('databases', 'phrog_annot_v4.tsv'),
-              type=click.Path(exists=True, path_type=Path),
+              type=click.Path(path_type=Path),
               help='table with PHROG annotations')
 def annotate_introns(fasta: Path,
                      cms: Path,
@@ -93,7 +93,7 @@ def annotate_introns(fasta: Path,
     # set up tmp intermediate directory and logger
 
     tmp_dir = out.joinpath(f'annotation_tmp')
-    tmp_dir.mkdir(parents=True)
+    tmp_dir.mkdir(parents=True, exist_ok=True)
 
     logger.add(tmp_dir.joinpath('annotation.log').as_posix(), format=log_format)
     logger.info(f'Started with the following parameters:')
@@ -112,15 +112,17 @@ def annotate_introns(fasta: Path,
                      '--cpu', threads,
                      hmm, forward_faa.as_posix()]
     if not hmmer_domtblout.exists():
-        run_external(hmmer_command, stdout='supress')
+        run_external(hmmer_command, stdout='suppress')
     hmm_alignments = AnnotationBase.from_hmmer(hmmer_domtblout)
     hmm_alignments = hmm_alignments.filter_score(threshold=minhmmscore)
 
-    if phrog_table:
+    if phrog_table and phrog_table.exists():
         phrog_df = pd.read_table(phrog_table, usecols=['phrog', 'annot'])
         phrog_df['phrog'] = phrog_df['phrog'].apply(lambda x: f'phrog_{x}')
         phrog_dict = dict(zip(phrog_df['phrog'], phrog_df['annot']))
         hmm_alignments.get_model_names(phrog_dict)
+    else:
+        phrog_dict = {}
 
     hammer_in_RNA = AnnotationBase()
     for translation_id, alignments in hmm_alignments.items():
@@ -139,7 +141,7 @@ def annotate_introns(fasta: Path,
                         '--cpu', threads,
                         cms, fasta.as_posix()]
     if not infernal_tblout.exists():
-        run_external(infernal_command, stdout='supress')
+        run_external(infernal_command, stdout='suppress')
     infernal_alignments = AnnotationBase.from_infernal(infernal_tblout, program=cmtool)
     infernal_alignments = infernal_alignments.filter_score(threshold=mincmscore)
     culled_infernal_alignments = infernal_alignments.cull()
@@ -149,9 +151,8 @@ def annotate_introns(fasta: Path,
             final_annotation.annotate(alignment)
 
     r2dt_dir = out.joinpath('r2dt')
-    r2dt_dir.mkdir(parents=True)
+    r2dt_dir.mkdir(parents=True, exist_ok=True)
     for seq_id, seq, seq_annotations in final_annotation.with_sequences(fasta):
-        seq_annotations = final_annotation[seq_id]
         r2td = r2dt_annotation(seq_annotations, seq)
         r2td_file = r2dt_dir.joinpath(f'{seq_id}.tsv')
         r2td.to_csv(r2td_file, sep='\t', index=False)
@@ -167,13 +168,15 @@ def translate_fna(in_fna: Path,
     :param out_faa: output fasta file with protein sequences
     :return: output fasta file with protein sequences and dictionary with DNA sequence lengths
     """
-    sequences = SeqIO.index(in_fna.as_posix(), 'fasta')
+    from tweaks import parse_fasta
+    from Bio import Seq
     translations = []
     lengths = {}
-    for seq_id, seq in sequences.items():
+    for seq_id, seq in parse_fasta(in_fna):
         lengths[seq_id] = len(seq)
+        seq_rec = Seq.Seq(seq) if hasattr(Seq, 'Seq') else Seq(seq)
         for frame in range(1, 4):
-            ft = SeqRecord.SeqRecord(seq.seq[frame - 1:]).translate(table=11, to_stop=False, stop_symbol='*')
+            ft = SeqRecord.SeqRecord(seq_rec[frame - 1:].translate(table=11, to_stop=False, stop_symbol='*'))
             ft.id = f'{seq_id}___{frame}'
             translations.append(ft)
     SeqIO.write(translations, out_faa.as_posix(), 'fasta')

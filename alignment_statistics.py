@@ -12,7 +12,6 @@ __license__ = "GNU GENERAL PUBLIC LICENSE"
 __email__ = "jakub.barylski@gmail.com"
 
 from collections import Counter, defaultdict
-from curses.ascii import isdigit
 from pathlib import Path
 
 import click
@@ -83,7 +82,7 @@ def minor_group(s: str) -> str:
     :return: group of the intron
     """
     minor_t = s.strip().split("__")[0]
-    if not isdigit(minor_t[-1]):
+    if not minor_t or not minor_t[-1].isdigit():
         return minor_t + '?'
     return minor_t
 
@@ -136,12 +135,22 @@ def trim_end_gaps(s1: str, s2: str) -> tuple[str, str]:
     :param s2: second sequence string
     :return: trimmed sequences
     """
-    for i in range(len(s1)):
-        if s1[i] != symbols['gap'] and s2[i] != symbols['gap']:
+    if not s1 or not s2:
+        return "", ""
+    i, j = 0, len(s1) - 1
+    found_i, found_j = False, False
+    for idx in range(len(s1)):
+        if s1[idx] != symbols['gap'] and s2[idx] != symbols['gap']:
+            i = idx
+            found_i = True
             break
-    for j in range(len(s1) - 1, 0, -1):
-        if s1[j] != symbols['gap'] and s2[j] != symbols['gap']:
+    for idx in range(len(s1) - 1, -1, -1):
+        if s1[idx] != symbols['gap'] and s2[idx] != symbols['gap']:
+            j = idx
+            found_j = True
             break
+    if not (found_i and found_j) or i > j:
+        return "", ""
     return s1[i:j + 1], s2[i:j + 1]
 
 
@@ -205,11 +214,10 @@ def count_intron_groups_in_file(msa: list[SeqIO.SeqRecord]) -> pd.DataFrame:
     """
     minor_grps = [minor_group(record.id) for record in msa]
     major_grps = [major_group(intron_group) for intron_group in minor_grps]
-    major_grps, minor_grps = Counter(major_grps), Counter(minor_grps)
+    major_counter, minor_counter = Counter(major_grps), Counter(minor_grps)
     intron_group_counts = pd.DataFrame(columns=["subgroup", "count"])
     intron_group_counts.set_index("subgroup", inplace=True)
-    all_groups = major_grps + minor_grps
-    for group, count in all_groups.items():
+    for group, count in list(major_counter.items()) + list(minor_counter.items()):
         intron_group_counts.loc[group] = count
     return intron_group_counts
 
@@ -237,6 +245,8 @@ def intron_aligned_lengths(msa: list[SeqIO.SeqRecord],
 
     stats = pd.DataFrame(columns=["min", "max", "mean", "median", "std"])
     for intron_group, values in lengths.items():
+        if not values:
+            continue
         minim, maxim, mean = min(values), max(values), np.mean(values)
         median = np.median(values)
         std = np.std(values)

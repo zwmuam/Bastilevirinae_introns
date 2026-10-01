@@ -134,8 +134,20 @@ class Annotation:
         seq_id, method, _, start, end, score, strand, _, data = gff_line.split('\t')
         score = 0 if score == '.' else float(score)
         start, end = int(start), int(end)
-        data = {k: v for k, v in
-                [e.strip().split(in_attr_separator) for e in data.split(between_attr_separator) if e.strip()]}
+        parsed_data = {}
+        for e in data.split(between_attr_separator):
+            if not e.strip():
+                continue
+            parts = e.strip().split(in_attr_separator, 1)
+            if len(parts) == 2:
+                parsed_data[parts[0]] = parts[1]
+            else:
+                subparts = e.strip().split('=', 1)
+                if len(subparts) == 2:
+                    parsed_data[subparts[0]] = subparts[1]
+                else:
+                    parsed_data[e.strip()] = 'n.a.'
+        data = parsed_data
         try:
             model_id = frantic_search(data, 'model', 'HMM', 'model_id', 'transcript_id')
         except KeyError:
@@ -209,12 +221,12 @@ class Annotation:
         :param flank: the number of residues to add to each side of the annotation
         :return: extended domain
         """
-        start, end = self.start - flank, self.end + flank
-        return Annotation(seq_id=self.seq_id,
-                          model_id=self.model_id, model_name=self.model_name,
-                          start=start, end=end, strand=self.strand,
-                          score=self.score, evalue=self.evalue,
-                          method=self.method)
+        start, end = max(1, self.start - flank), self.end + flank
+        return self.__class__(seq_id=self.seq_id,
+                              model_id=self.model_id, model_name=self.model_name,
+                              start=start, end=end, strand=self.strand,
+                              score=self.score, evalue=self.evalue,
+                              method=self.method)
 
     def reverse_complement(self, seq_len: int) -> 'Annotation':
         """
@@ -243,9 +255,9 @@ class Annotation:
             overlap_end = min(self.end, other.end)
             overlap = overlap_end - overlap_start + 1
             if overlap < 1:
-                raise NotImplementedError()
+                return 0
             else:
-                return max([overlap / len(e) for e in (self, other)])
+                return max([overlap / len(e) if len(e) > 0 else 0 for e in (self, other)])
         elif other.end >= self.start and other.start <= self.end:
             return other.overlaps(self)
         return 0
@@ -375,7 +387,7 @@ class Annotation:
           Get the name of the model based on the id
           :param id2name_dict: dictionary with id as the key and name as the value
           """
-        self.model_name = id2name_dict[self.model_id]
+        self.model_name = id2name_dict.get(self.model_id, self.model_name)
 
 
 class InfernalAlignment(Annotation):
@@ -922,7 +934,7 @@ class AnnotationBase(dict):
         :param by: attribute to sort by (e.g. start, end, score)
         """
         for track in self.values():
-            track.sort_annotations(key=lambda a: getattr(a, by))
+            track.sort_annotations(by=by)
 
     def include(self,
                 other: 'AnnotationBase',
@@ -1046,10 +1058,8 @@ class AnnotationBase(dict):
         used_seq_ids = set()
         for seq_id, seq in sequences:
             used_seq_ids.add(seq_id)
-            yield seq_id, seq, self[seq_id]
+            yield seq_id, seq, self.get(seq_id, AnnotationTrack(seq_id))
 
         # check if any sequence is missing
-        not_in_self = used_seq_ids - set(self.keys())
         not_in_fasta = set(self.keys()) - used_seq_ids
-        assert not not_in_self, f'No annotations for sequences: {not_in_self}'
         assert not not_in_fasta, f'No sequences for annotations: {not_in_fasta}'

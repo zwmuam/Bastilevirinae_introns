@@ -15,7 +15,10 @@ from random import randint
 
 import click
 
-import porechop_custom
+try:
+    import porechop_custom
+except ImportError:
+    porechop_custom = None
 from annotations import Exon, Intron, Gene, AnnotationBase
 from tweaks import run_external
 
@@ -43,7 +46,7 @@ from tweaks import run_external
               help='directory with reference fasta files')
 @click.option("-o", "--output",
               required=True,
-              type=click.Path(exists=False, path_type=Path),
+              type=click.Path(path_type=Path),
               help='output directory')
 @click.option("-s", "--separator",
               required=True,
@@ -80,12 +83,12 @@ def rnaseq_analysis(custom_adapters: Path,
     Usage example: ./confirm_introns.py -ca custom_adapters -cb custom_barcodes -fq reads.fastq -rd reference_genomes_dir -o output_dir -s '__' -mr 1000
     """
     assert read_fastq or clean_reads, 'Provide either fastq to trim or clean_reads'
-    output.mkdir()
+    output.mkdir(parents=True, exist_ok=True)
     if not clean_reads:
         demultiplexing_dir = output.joinpath('demultiplexing')
-        demultiplexing_dir.mkdir()
+        demultiplexing_dir.mkdir(parents=True, exist_ok=True)
         filtered_read_dir = output.joinpath(f'filtered.{min_length}bp_q{min_mean_q}')
-        filtered_read_dir.mkdir()
+        filtered_read_dir.mkdir(parents=True, exist_ok=True)
 
         clean_reads = trim_and_demultiplex(read_fastq=read_fastq,
                                            custom_adapters=custom_adapters,
@@ -98,11 +101,11 @@ def rnaseq_analysis(custom_adapters: Path,
         clean_reads = [Path(f) for f in clean_reads.iterdir() if f.suffix in ('.fastq', '.fq')]
 
     minimap_sorted_dir = output.joinpath('minimap2_sorted')
-    minimap_sorted_dir.mkdir()
+    minimap_sorted_dir.mkdir(parents=True, exist_ok=True)
     minumap_filtered_dir = output.joinpath('minimap2_filtered')
-    minumap_filtered_dir.mkdir()
+    minumap_filtered_dir.mkdir(parents=True, exist_ok=True)
     raw_gff_dir = output.joinpath('raw_gff')
-    raw_gff_dir.mkdir()
+    raw_gff_dir.mkdir(parents=True, exist_ok=True)
 
     filtered_introns = AnnotationBase()
 
@@ -150,6 +153,7 @@ def trim_and_demultiplex(read_fastq: Path,
     :param min_mean_q: minimum mean quality to keep during read filtering
     """
 
+    assert porechop_custom is not None, "porechop_custom (and porechop) required for demultiplexing"
     porechop_custom.main(input=read_fastq,
                          barcode_dir=demultiplexing_dir,
                          custom_adapters=custom_adapters,
@@ -230,6 +234,8 @@ def splice_sites(spliced_bam: Path,
     :param minimal_fraction: minimal fraction of reads supporting the intron required to report it in the final gff
     :param minimal_coverage: minimal number of reads supporting the intron required to report it in the final gff
     """
+    if mapped_reads <= 0:
+        return output
     spliced_bam2gff_command = ['spliced_bam2gff', '-M', spliced_bam]
     raw_gff = raw_gff_dir.joinpath(f'{spliced_bam.stem}.gff')
     raw_gff_lines = run_external(spliced_bam2gff_command, stdout='capture')

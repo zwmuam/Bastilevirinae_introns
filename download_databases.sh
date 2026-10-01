@@ -2,7 +2,7 @@
 mkdir -p ./databases
 # Download databases from the paper (PHROGs v4 and custom intron-related InfeRNAl models).
 wget -O ./databases/databases.zip "https://figshare.com/ndownloader/files/47854990"
-unzip ./databases/databases.zip
+unzip -o ./databases/databases.zip -d ./databases
 hmmpress ./databases/Phrogs4_HMMer3.hmm
 cmpress ./databases/Merged.1.GISSD_IRFAM.cm
 
